@@ -1,0 +1,102 @@
+# Development mode override for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  # Infrastructure services remain the same (postgres, kafka, etc.)
+
+  # Metadata Service - Dev Mode with Hot Reload
+  metadata-service:
+    build:
+      context: ./apps/metadata-service
+      dockerfile: Dockerfile.dev
+      target: development
+    volumes:
+      - ./apps/metadata-service/src:/app/src:delegated
+      - ./apps/metadata-service/pom.xml:/app/pom.xml:delegated
+      - maven_cache_metadata:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      LOGGING_LEVEL_COM_BEEMA: DEBUG
+    command: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "8082:8082"
+      - "35730:35729"  # LiveReload port
+      - "5005:5005"    # Debug port
+
+  # Beema Kernel - Dev Mode with Hot Reload
+  beema-kernel:
+    build:
+      context: ./beema-kernel
+      dockerfile: Dockerfile.dev
+      target: development
+    volumes:
+      - ./beema-kernel/src:/app/src:delegated
+      - ./beema-kernel/pom.xml:/app/pom.xml:delegated
+      - maven_cache_kernel:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      LOGGING_LEVEL_COM_BEEMA: DEBUG
+      TEMPORAL_WORKER_ENABLED: "true"
+    command: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
+    ports:
+      - "8080:8080"
+      - "35731:35729"  # LiveReload port
+      - "5006:5006"    # Debug port
+
+  # Message Processor - Dev Mode (Local Flink Execution)
+  beema-message-processor:
+    build:
+      context: ./apps/beema-message-processor
+      dockerfile: Dockerfile.dev
+      target: development
+    volumes:
+      - ./apps/beema-message-processor/src:/app/src:delegated
+      - ./apps/beema-message-processor/pom.xml:/app/pom.xml:delegated
+      - maven_cache_processor:/root/.m2
+    environment:
+      LOGGING_LEVEL_COM_BEEMA: DEBUG
+      FLINK_EXECUTION_MODE: local  # Run in local mode for dev
+    command: mvn exec:java -Dexec.mainClass="com.beema.processor.MessageProcessorJob"
+    ports:
+      - "8083:8083"
+      - "5007:5007"  # Debug port
+    depends_on:
+      - postgres
+      - kafka
+      - kafka-init
+
+  # Studio - Dev Mode with Hot Reload
+  studio:
+    build:
+      context: .
+      dockerfile: apps/studio/Dockerfile.dev
+      target: development
+    volumes:
+      - ./apps/studio:/app/apps/studio:delegated
+      - ./packages/ui:/app/packages/ui:delegated
+      - ./package.json:/app/package.json:delegated
+      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml:delegated
+      - ./turbo.json:/app/turbo.json:delegated
+      - /app/node_modules
+      - /app/apps/studio/node_modules
+      - /app/apps/studio/.next
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHPACK_POLLING: "true"  # Enable polling for Docker file watching
+    command: pnpm --filter @beema/studio dev
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js debug port
+
+volumes:
+  maven_cache_metadata:
+    driver: local
+  maven_cache_kernel:
+    driver: local
+  maven_cache_processor:
+    driver: local

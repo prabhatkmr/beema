@@ -1,0 +1,67 @@
+{{- if .Values.messageProcessor.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "beema.fullname" . }}-processor-submit
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-processor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: message-processor
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "beema.name" . }}-processor
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: flink-job-submitter
+          image: flink:1.18.1
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for Flink JobManager to be ready..."
+              until curl -f http://{{ .Values.messageProcessor.env.FLINK_JOBMANAGER_HOST }}:8081/overview; do
+                echo "Waiting for JobManager..."
+                sleep 5
+              done
+              echo "JobManager is ready. Submitting job..."
+              /opt/flink/bin/flink run \
+                --jobmanager {{ .Values.messageProcessor.env.FLINK_JOBMANAGER_HOST }}:{{ .Values.messageProcessor.env.FLINK_JOBMANAGER_PORT }} \
+                --detached \
+                --class {{ .Values.messageProcessor.job.className }} \
+                {{ .Values.messageProcessor.job.jarPath }}
+          env:
+            {{- range $key, $value := .Values.messageProcessor.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- if .Values.messageProcessor.secrets.dbCredentials }}
+            {{- range $envVar, $secretKey := .Values.messageProcessor.secrets.dbCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.messageProcessor.secrets.dbCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: job-jar
+              mountPath: /opt/flink/usrlib
+              readOnly: true
+      volumes:
+        - name: job-jar
+          emptyDir: {}
+      initContainers:
+        - name: download-jar
+          image: "{{ .Values.messageProcessor.image.registry }}/{{ .Values.messageProcessor.image.repository }}:{{ .Values.messageProcessor.image.tag }}"
+          command:
+            - sh
+            - -c
+            - cp /app/target/beema-message-processor-*.jar {{ .Values.messageProcessor.job.jarPath }}
+          volumeMounts:
+            - name: job-jar
+              mountPath: /opt/flink/usrlib
+{{- end }}

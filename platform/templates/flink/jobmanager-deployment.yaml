@@ -1,0 +1,57 @@
+{{- if .Values.flink.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "beema.fullname" . }}-flink-jobmanager
+  labels:
+    app.kubernetes.io/name: flink-jobmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: flink
+spec:
+  replicas: {{ .Values.flink.jobmanager.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flink-jobmanager
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flink-jobmanager
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: jobmanager
+          image: flink:1.18.1
+          args: ["jobmanager"]
+          ports:
+            - containerPort: 6123
+              name: rpc
+            - containerPort: 6124
+              name: blob-server
+            - containerPort: 8081
+              name: webui
+          env:
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: {{ include "beema.fullname" . }}-flink-jobmanager
+                jobmanager.rpc.port: 6123
+                jobmanager.bind-host: 0.0.0.0
+                jobmanager.memory.process.size: 1600m
+                taskmanager.numberOfTaskSlots: 4
+                parallelism.default: 2
+                state.backend: rocksdb
+                state.checkpoints.dir: file:///opt/flink/checkpoints
+                state.savepoints.dir: file:///opt/flink/savepoints
+          resources:
+            {{- toYaml .Values.flink.jobmanager.resources | nindent 12 }}
+          volumeMounts:
+            - name: flink-checkpoints
+              mountPath: /opt/flink/checkpoints
+            - name: flink-savepoints
+              mountPath: /opt/flink/savepoints
+      volumes:
+        - name: flink-checkpoints
+          emptyDir: {}
+        - name: flink-savepoints
+          emptyDir: {}
+{{- end }}

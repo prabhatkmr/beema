@@ -1,0 +1,20 @@
+{{- if .Values.metadataService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "beema.fullname" . }}-metadata
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: metadata-service
+spec:
+  type: {{ .Values.metadataService.service.type }}
+  ports:
+    - port: {{ .Values.metadataService.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

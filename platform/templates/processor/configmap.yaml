@@ -1,0 +1,21 @@
+{{- if .Values.messageProcessor.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "beema.fullname" . }}-processor-config
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-processor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: message-processor
+data:
+  flink-conf.yaml: |
+    jobmanager.rpc.address: {{ .Values.messageProcessor.env.FLINK_JOBMANAGER_HOST }}
+    jobmanager.rpc.port: {{ .Values.messageProcessor.env.FLINK_JOBMANAGER_PORT }}
+    taskmanager.numberOfTaskSlots: 4
+    parallelism.default: {{ .Values.messageProcessor.job.parallelism }}
+    execution.checkpointing.interval: {{ .Values.messageProcessor.job.checkpointInterval }}
+    execution.checkpointing.mode: EXACTLY_ONCE
+    state.backend: rocksdb
+    state.checkpoints.dir: file:///opt/flink/checkpoints
+    state.savepoints.dir: file:///opt/flink/savepoints
+{{- end }}

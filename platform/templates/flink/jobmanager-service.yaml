@@ -1,0 +1,24 @@
+{{- if .Values.flink.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "beema.fullname" . }}-flink-jobmanager
+  labels:
+    app.kubernetes.io/name: flink-jobmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: rpc
+      port: 6123
+      targetPort: rpc
+    - name: blob-server
+      port: 6124
+      targetPort: blob-server
+    - name: webui
+      port: 8081
+      targetPort: webui
+  selector:
+    app.kubernetes.io/name: flink-jobmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

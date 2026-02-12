@@ -1,0 +1,76 @@
+apiVersion: v2
+name: beema
+description: Beema Unified Insurance Platform - Complete Helm Chart
+type: application
+version: 0.2.0
+appVersion: "0.1.0-SNAPSHOT"
+
+keywords:
+  - insurance
+  - platform
+  - temporal
+  - flink
+  - kafka
+
+maintainers:
+  - name: Beema Platform Team
+
+# External chart dependencies for infrastructure
+dependencies:
+  # PostgreSQL Database
+  - name: postgresql
+    version: 15.2.5
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  # Kafka Message Broker
+  - name: kafka
+    version: 28.2.1
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled
+    tags:
+      - messaging
+
+  # Keycloak Authentication
+  - name: keycloak
+    version: 21.4.4
+    repository: https://charts.bitnami.com/bitnami
+    condition: keycloak.enabled
+    tags:
+      - auth
+
+  # Prometheus + Grafana Stack
+  - name: kube-prometheus-stack
+    version: 58.0.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: observability.prometheus.enabled
+    tags:
+      - observability
+
+  # Jaeger Distributed Tracing
+  - name: jaeger
+    version: 3.1.1
+    repository: https://jaegertracing.github.io/helm-charts
+    condition: observability.jaeger.enabled
+    tags:
+      - observability
+
+annotations:
+  # Artifact Hub metadata
+  artifacthub.io/changes: |
+    - kind: added
+      description: Added metadata-service deployment
+    - kind: added
+      description: Added message-processor Flink job
+    - kind: added
+      description: Added studio frontend
+    - kind: added
+      description: Added Inngest event orchestration
+    - kind: added
+      description: Added Flink cluster (JobManager + TaskManager)
+    - kind: changed
+      description: Updated beema-kernel with AI and Inngest configurations
+    - kind: added
+      description: Added Kafka topics initialization job

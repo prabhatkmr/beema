@@ -1,0 +1,488 @@
+# Beema Platform - Complete Helm Values
+# Updated to match docker-compose.yml configuration
+
+global:
+  # Image registry for all Beema services
+  imageRegistry: ghcr.io/beema
+
+  # Market contexts
+  marketContexts: ["RETAIL", "COMMERCIAL", "LONDON_MARKET"]
+
+  # Data residency configuration
+  dataResidency:
+    enabled: true
+    regions:
+      - name: "uk-south"
+        tenants: ["london_syndicate_123"]
+      - name: "us-east-1"
+        tenants: ["retail_carrier_xyz"]
+
+  # Multi-cloud storage for analytics
+  dataPlatform:
+    provider: "aws"  # Options: aws, azure, gcp
+    bucketName: "beema-analytics-export"
+    region: "us-east-1"
+
+# ==============================================================================
+# Infrastructure Dependencies (External Charts or Managed Services)
+# ==============================================================================
+
+postgresql:
+  enabled: true
+  # Use Bitnami PostgreSQL chart
+  # If using managed service (RDS, Cloud SQL), set enabled: false
+  auth:
+    username: beema
+    password: changeme  # Use sealed-secrets in production
+    database: beema_kernel
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+  # Create additional databases for metadata service
+  initdbScripts:
+    init-databases.sh: |
+      #!/bin/bash
+      set -e
+      psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+        CREATE DATABASE beema_metadata;
+        CREATE DATABASE keycloak;
+        GRANT ALL PRIVILEGES ON DATABASE beema_metadata TO beema;
+        GRANT ALL PRIVILEGES ON DATABASE keycloak TO beema;
+      EOSQL
+
+kafka:
+  enabled: true
+  # Use Bitnami Kafka chart
+  # If using managed service (MSK, Confluent Cloud), set enabled: false
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 10Gi
+  zookeeper:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 5Gi
+  # Topic auto-creation
+  autoCreateTopicsEnable: true
+
+keycloak:
+  enabled: true
+  # Use Codecentric Keycloak chart
+  auth:
+    adminUser: admin
+    adminPassword: changeme
+  postgresql:
+    enabled: false  # Use shared PostgreSQL
+  externalDatabase:
+    host: beema-postgresql
+    port: 5432
+    user: beema
+    database: keycloak
+    existingSecret: beema-db-credentials
+    existingSecretPasswordKey: password
+
+temporal:
+  enabled: true
+  # Use Temporal Helm chart
+  server:
+    enabled: false  # Assume external Temporal cluster
+    host: temporal-frontend.temporal.svc.cluster.local
+    port: 7233
+    namespace: default
+
+flink:
+  enabled: true
+  # Flink cluster for message processing
+  jobmanager:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1
+        memory: 2Gi
+  taskmanager:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
+    taskSlots: 4
+
+observability:
+  # Prometheus stack (kube-prometheus-stack chart)
+  prometheus:
+    enabled: true
+
+  # Jaeger distributed tracing
+  jaeger:
+    enabled: true
+    collector:
+      enabled: true
+
+  # Grafana dashboards
+  grafana:
+    enabled: true
+
+inngest:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: inngest/inngest
+    tag: latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# ==============================================================================
+# Beema Kernel Service (Main Application + Temporal Worker)
+# ==============================================================================
+
+beemaKernel:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    registry: ghcr.io
+    repository: beema/beema-kernel
+    tag: "0.1.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8080
+    annotations: {}
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: api.beema.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: beema-kernel-tls
+        hosts:
+          - api.beema.example.com
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 2Gi
+
+  env:
+    # Spring Boot
+    SPRING_PROFILES_ACTIVE: "prod,json-logging"
+
+    # Database
+    DB_HOST: "beema-postgresql"
+    DB_PORT: "5432"
+    DB_NAME: "beema_kernel"
+
+    # OAuth2/OIDC
+    OAUTH2_ISSUER_URI: "https://auth.beema.example.com/realms/beema"
+    OAUTH2_JWK_SET_URI: "https://auth.beema.example.com/realms/beema/protocol/openid-connect/certs"
+
+    # Temporal
+    TEMPORAL_HOST: "temporal-frontend.temporal.svc.cluster.local"
+    TEMPORAL_PORT: "7233"
+    TEMPORAL_NAMESPACE: "default"
+    TEMPORAL_WORKER_ENABLED: "false"  # Workers run separately
+    TEMPORAL_TASK_QUEUE: "POLICY_TASK_QUEUE"
+
+    # Metadata Service
+    METADATA_SERVICE_URL: "http://beema-metadata-service:8082"
+
+    # OpenRouter AI
+    OPENROUTER_API_KEY: ""  # Set via secret
+    OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+    AI_MODEL: "anthropic/claude-3.5-sonnet"
+
+    # Inngest
+    INNGEST_EVENT_KEY: ""  # Set via secret
+    INNGEST_SIGNING_KEY: ""  # Set via secret
+    INNGEST_BASE_URL: "http://beema-inngest:8288"
+
+    # OpenTelemetry
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-collector:4318"
+    OTEL_SERVICE_NAME: "beema-kernel"
+    ENVIRONMENT: "production"
+
+  secrets:
+    dbCredentials:
+      secretName: beema-db-credentials
+      keys:
+        DB_USERNAME: username
+        DB_PASSWORD: password
+    aiCredentials:
+      secretName: beema-ai-credentials
+      keys:
+        OPENROUTER_API_KEY: api-key
+    inngestCredentials:
+      secretName: beema-inngest-credentials
+      keys:
+        INNGEST_EVENT_KEY: event-key
+        INNGEST_SIGNING_KEY: signing-key
+
+  probes:
+    liveness:
+      httpGet:
+        path: /actuator/health/liveness
+        port: 8080
+      initialDelaySeconds: 60
+      periodSeconds: 15
+    readiness:
+      httpGet:
+        path: /actuator/health/readiness
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+
+  # Flyway migration init container
+  initContainers:
+    flyway:
+      enabled: true
+      image:
+        registry: ghcr.io
+        repository: beema/beema-kernel
+        tag: "0.1.0-SNAPSHOT"
+      command: ["java", "-cp", "app.jar", "org.flywaydb.core.Flyway", "migrate"]
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+
+# ==============================================================================
+# Temporal Worker (Separate Deployment)
+# ==============================================================================
+
+temporalWorker:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    registry: ghcr.io
+    repository: beema/beema-kernel
+    tag: "0.1.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  taskQueue: "POLICY_TASK_QUEUE"
+
+  config:
+    maxConcurrentActivities: 10
+    maxConcurrentWorkflows: 10
+    maxConcurrentLocalActivities: 100
+    workerStopTimeout: 30s
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 2Gi
+
+  env:
+    SPRING_PROFILES_ACTIVE: "prod,json-logging"
+    DB_HOST: "beema-postgresql"
+    DB_PORT: "5432"
+    DB_NAME: "beema_kernel"
+    TEMPORAL_WORKER_ENABLED: "true"
+    TEMPORAL_HOST: "temporal-frontend.temporal.svc.cluster.local"
+    TEMPORAL_PORT: "7233"
+    TEMPORAL_NAMESPACE: "default"
+    TEMPORAL_TASK_QUEUE: "POLICY_TASK_QUEUE"
+    TEMPORAL_MAX_CONCURRENT_ACTIVITIES: "10"
+    TEMPORAL_MAX_CONCURRENT_WORKFLOWS: "10"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# ==============================================================================
+# Metadata Service (Message Hook Registry)
+# ==============================================================================
+
+metadataService:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    registry: ghcr.io
+    repository: beema/metadata-service
+    tag: "0.1.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8082
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+
+  env:
+    SPRING_PROFILES_ACTIVE: "prod,json-logging"
+    DB_HOST: "beema-postgresql"
+    DB_PORT: "5432"
+    DB_NAME: "beema_metadata"
+    OAUTH2_ISSUER_URI: "https://auth.beema.example.com/realms/beema"
+    KAFKA_BOOTSTRAP_SERVERS: "beema-kafka:9092"
+    KAFKA_CONTROL_TOPIC: "message-hooks-control"
+
+  secrets:
+    dbCredentials:
+      secretName: beema-db-credentials
+      keys:
+        DB_USERNAME: username
+        DB_PASSWORD: password
+
+  probes:
+    liveness:
+      httpGet:
+        path: /actuator/health/liveness
+        port: 8082
+      initialDelaySeconds: 60
+    readiness:
+      httpGet:
+        path: /actuator/health/readiness
+        port: 8082
+      initialDelaySeconds: 30
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+
+# ==============================================================================
+# Message Processor (Flink Streaming Job)
+# ==============================================================================
+
+messageProcessor:
+  enabled: true
+
+  image:
+    registry: ghcr.io
+    repository: beema/message-processor
+    tag: "0.1.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  # Flink job configuration
+  job:
+    jarPath: /opt/flink/usrlib/beema-message-processor.jar
+    className: com.beema.processor.MessageProcessorJob
+    parallelism: 4
+    checkpointInterval: 60000
+
+  env:
+    KAFKA_BOOTSTRAP_SERVERS: "beema-kafka:9092"
+    KAFKA_GROUP_ID: "beema-message-processor"
+    KAFKA_SOURCE_TOPIC: "raw-messages"
+    KAFKA_SINK_TOPIC: "beema-events"
+    KAFKA_CONTROL_TOPIC: "message-hooks-control"
+    DB_HOST: "beema-postgresql"
+    DB_PORT: "5432"
+    DB_NAME: "beema_kernel"
+    FLINK_JOBMANAGER_HOST: "beema-flink-jobmanager"
+    FLINK_JOBMANAGER_PORT: "6123"
+
+  secrets:
+    dbCredentials:
+      secretName: beema-db-credentials
+
+# ==============================================================================
+# Studio (Next.js Frontend)
+# ==============================================================================
+
+studio:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    registry: ghcr.io
+    repository: beema/studio
+    tag: "0.1.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: studio.beema.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: studio-tls
+        hosts:
+          - studio.beema.example.com
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_BASE_URL: "https://api.beema.example.com/api/v1"
+    NEXT_PUBLIC_INNGEST_URL: "http://beema-inngest:8288"
+
+  secrets:
+    inngestCredentials:
+      secretName: beema-inngest-credentials
+      keys:
+        INNGEST_EVENT_KEY: event-key
+        INNGEST_SIGNING_KEY: signing-key
+
+  probes:
+    liveness:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 30
+    readiness:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 10
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70

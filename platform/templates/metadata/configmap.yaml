@@ -1,0 +1,44 @@
+{{- if .Values.metadataService.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "beema.fullname" . }}-metadata-config
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: metadata-service
+data:
+  application.yml: |
+    server:
+      port: 8082
+
+    spring:
+      application:
+        name: metadata-service
+      datasource:
+        url: jdbc:postgresql://{{ .Values.metadataService.env.DB_HOST }}:{{ .Values.metadataService.env.DB_PORT }}/{{ .Values.metadataService.env.DB_NAME }}
+        driver-class-name: org.postgresql.Driver
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+      flyway:
+        enabled: true
+        locations: classpath:db/migration
+
+    kafka:
+      bootstrap-servers: {{ .Values.metadataService.env.KAFKA_BOOTSTRAP_SERVERS }}
+      control-topic: {{ .Values.metadataService.env.KAFKA_CONTROL_TOPIC }}
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+{{- end }}

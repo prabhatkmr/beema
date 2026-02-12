@@ -1,0 +1,69 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "beema.fullname" . }}-kafka-topics-init
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-kafka-topics
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "beema.name" . }}-kafka-topics
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: kafka-topics-init
+          image: confluentinc/cp-kafka:7.6.0
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for Kafka to be ready..."
+              until kafka-broker-api-versions --bootstrap-server {{ include "beema.fullname" . }}-kafka:9092; do
+                echo "Waiting for Kafka..."
+                sleep 5
+              done
+
+              echo "Creating raw-messages topic..."
+              kafka-topics --bootstrap-server {{ include "beema.fullname" . }}-kafka:9092 \
+                --create --if-not-exists \
+                --topic raw-messages \
+                --partitions 3 \
+                --replication-factor 1 \
+                --config retention.ms=604800000
+
+              echo "Creating processed-messages topic..."
+              kafka-topics --bootstrap-server {{ include "beema.fullname" . }}-kafka:9092 \
+                --create --if-not-exists \
+                --topic processed-messages \
+                --partitions 3 \
+                --replication-factor 1 \
+                --config retention.ms=604800000
+
+              echo "Creating beema-events topic..."
+              kafka-topics --bootstrap-server {{ include "beema.fullname" . }}-kafka:9092 \
+                --create --if-not-exists \
+                --topic beema-events \
+                --partitions 6 \
+                --replication-factor 1 \
+                --config retention.ms=2592000000
+
+              echo "Creating message-hooks-control topic..."
+              kafka-topics --bootstrap-server {{ include "beema.fullname" . }}-kafka:9092 \
+                --create --if-not-exists \
+                --topic message-hooks-control \
+                --partitions 1 \
+                --replication-factor 1 \
+                --config retention.ms=-1 \
+                --config cleanup.policy=compact
+
+              echo "All topics created successfully!"
+{{- end }}

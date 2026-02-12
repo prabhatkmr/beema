@@ -43,6 +43,24 @@ spec:
             {{- end }}
             - name: DATA_PLATFORM_PROVIDER
               value: {{ .Values.dataPlatform.provider | quote }}
+            {{- if .Values.beemaKernel.secrets.aiCredentials }}
+            {{- range $envVar, $secretKey := .Values.beemaKernel.secrets.aiCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.beemaKernel.secrets.aiCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.beemaKernel.secrets.inngestCredentials }}
+            {{- range $envVar, $secretKey := .Values.beemaKernel.secrets.inngestCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.beemaKernel.secrets.inngestCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+            {{- end }}
             {{- range $envVar, $secretKey := .Values.beemaKernel.secrets.dbCredentials.keys }}
             - name: {{ $envVar }}
               valueFrom:

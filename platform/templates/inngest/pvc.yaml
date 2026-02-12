@@ -1,0 +1,15 @@
+{{- if .Values.inngest.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "beema.fullname" . }}-inngest-pvc
+  labels:
+    app.kubernetes.io/name: inngest
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+{{- end }}

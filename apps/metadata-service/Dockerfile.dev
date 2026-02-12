@@ -1,0 +1,18 @@
+# Development Dockerfile for Metadata Service with Hot Reload
+
+FROM maven:3.9-eclipse-temurin-21 AS development
+
+WORKDIR /app
+
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code (will be mounted as volume in dev mode)
+COPY src ./src
+
+# Expose application port, LiveReload port, and debug port
+EXPOSE 8082 35729 5005
+
+# Use spring-boot:run for automatic restart on code changes
+CMD ["mvn", "spring-boot:run"]

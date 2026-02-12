@@ -1,0 +1,79 @@
+{{- if .Values.metadataService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "beema.fullname" . }}-metadata
+  labels:
+    app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: metadata-service
+    app.kubernetes.io/part-of: beema
+spec:
+  replicas: {{ .Values.metadataService.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "beema.name" . }}-metadata
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: metadata-service
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/metadata/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- if .Values.metadataService.initContainers }}
+      initContainers:
+        - name: flyway-migrate
+          image: "{{ .Values.metadataService.image.registry }}/{{ .Values.metadataService.image.repository }}:{{ .Values.metadataService.image.tag }}"
+          command: ["java", "-cp", "app.jar", "org.flywaydb.core.Flyway", "migrate"]
+          env:
+            {{- range $key, $value := .Values.metadataService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $envVar, $secretKey := .Values.metadataService.secrets.dbCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.metadataService.secrets.dbCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      {{- end }}
+      containers:
+        - name: metadata-service
+          image: "{{ .Values.metadataService.image.registry }}/{{ .Values.metadataService.image.repository }}:{{ .Values.metadataService.image.tag }}"
+          imagePullPolicy: {{ .Values.metadataService.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8082
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.metadataService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $envVar, $secretKey := .Values.metadataService.secrets.dbCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.metadataService.secrets.dbCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+          {{- if .Values.metadataService.probes }}
+          livenessProbe:
+            {{- toYaml .Values.metadataService.probes.liveness | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.metadataService.probes.readiness | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.metadataService.resources | nindent 12 }}
+{{- end }}

@@ -1,0 +1,49 @@
+{{- if .Values.flink.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "beema.fullname" . }}-flink-taskmanager
+  labels:
+    app.kubernetes.io/name: flink-taskmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: flink
+spec:
+  replicas: {{ .Values.flink.taskmanager.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flink-taskmanager
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flink-taskmanager
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: taskmanager
+          image: flink:1.18.1
+          args: ["taskmanager"]
+          ports:
+            - containerPort: 6122
+              name: rpc
+          env:
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: {{ include "beema.fullname" . }}-flink-jobmanager
+                jobmanager.rpc.port: 6123
+                taskmanager.numberOfTaskSlots: {{ .Values.flink.taskmanager.taskSlots }}
+                taskmanager.memory.process.size: 2048m
+                taskmanager.memory.managed.fraction: 0.4
+          resources:
+            {{- toYaml .Values.flink.taskmanager.resources | nindent 12 }}
+          volumeMounts:
+            - name: flink-checkpoints
+              mountPath: /opt/flink/checkpoints
+            - name: flink-savepoints
+              mountPath: /opt/flink/savepoints
+      volumes:
+        - name: flink-checkpoints
+          emptyDir: {}
+        - name: flink-savepoints
+          emptyDir: {}
+{{- end }}
