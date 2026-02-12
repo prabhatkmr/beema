@@ -119,6 +119,13 @@
             <version>3.4.0</version>
         </dependency>
 
+        <!-- Spring AI for LLM Integration -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+            <version>1.0.0-M4</version>
+        </dependency>
+
         <!-- Temporal Workflow SDK -->
         <dependency>
             <groupId>io.temporal</groupId>
@@ -147,6 +154,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- Redis for event caching (optional) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <!-- Structured JSON Logging -->
@@ -201,6 +214,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <!-- Add Spring Milestones repository for Spring AI -->
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

@@ -92,6 +92,7 @@ Ensure these ports are available on your host machine:
 | 9092  | Kafka                | Kafka external listener        |
 | 29092 | Kafka                | Kafka internal listener        |
 | 2181  | Zookeeper            | Kafka coordination             |
+| 8288  | Inngest Dev Server   | Event infrastructure UI        |
 
 ## Quick Start
 
@@ -165,6 +166,7 @@ Once all services are healthy (1-2 minutes):
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **Temporal UI**: http://localhost:8088
 - **Keycloak Admin**: http://localhost:8180 (admin/admin)
+- **Inngest Dev UI**: http://localhost:8288
 
 ## Configuration Details
 
@@ -241,6 +243,86 @@ TEMPORAL_TASK_QUEUE: POLICY_TASK_QUEUE
 - **Topics** (auto-created):
   - `raw-messages` (3 partitions)
   - `processed-messages` (3 partitions)
+
+### Inngest Dev Server
+
+**Service**: `inngest`
+- **Container**: `beema-inngest`
+- **Image**: `inngest/inngest:v0.38.0`
+- **Port**: `8288:8288`
+- **Purpose**: Event infrastructure for webhook dispatching and event visualization
+- **Environment**:
+  - `INNGEST_EVENT_KEY`: local
+  - `INNGEST_SIGNING_KEY`: test-signing-key (development only)
+  - `INNGEST_LOG_LEVEL`: info
+
+**Key Features**:
+- Event visualization in Dev UI
+- Webhook dispatcher function execution
+- Event debugging and replay
+- Function run monitoring
+
+## Inngest Dev Server
+
+### Starting Inngest
+
+```bash
+# Start just Inngest
+docker-compose up -d inngest
+
+# Or use the startup script
+./scripts/start-inngest.sh
+```
+
+### Access Points
+
+- **Inngest Dev UI**: http://localhost:8288
+- **Event API**: http://localhost:8288/e/local
+- **Health Check**: http://localhost:8288/health
+
+### Viewing Events
+
+1. Open http://localhost:8288
+2. Navigate to "Events" tab
+3. See all published events from beema-kernel
+
+### Viewing Function Runs
+
+1. Open http://localhost:8288
+2. Navigate to "Functions" tab
+3. See webhook-dispatcher executions
+4. View logs and execution details
+
+### Testing Event Flow
+
+```bash
+# Run the test script
+./scripts/test-inngest-events.sh
+
+# Or manually publish an event
+curl -X POST http://localhost:8080/api/v1/events/test/policy-bound
+```
+
+### Troubleshooting
+
+**Inngest not starting:**
+```bash
+# Check logs
+docker-compose logs inngest
+
+# Restart
+docker-compose restart inngest
+```
+
+**Events not appearing:**
+- Check beema-kernel is connected: `docker-compose logs beema-kernel | grep inngest`
+- Verify INNGEST_BASE_URL is set correctly
+- Check Inngest health: `curl http://localhost:8288/health`
+
+**Functions not triggering:**
+- Ensure Studio is running: `docker-compose ps studio`
+- Check function registration: Visit http://localhost:8288/functions
+- Verify Inngest serve route: `curl http://localhost:3000/api/inngest`
 
 ## Testing the Setup
 

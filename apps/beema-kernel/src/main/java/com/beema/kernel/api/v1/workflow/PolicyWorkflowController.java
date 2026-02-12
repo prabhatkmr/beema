@@ -239,7 +239,8 @@ public class PolicyWorkflowController {
 
             // Get result with timeout
             PolicyWorkflowResult result = untypedWorkflow.getResult(
-                    Duration.ofSeconds(timeoutSeconds),
+                    timeoutSeconds,
+                    java.util.concurrent.TimeUnit.SECONDS,
                     PolicyWorkflowResult.class
             );
 

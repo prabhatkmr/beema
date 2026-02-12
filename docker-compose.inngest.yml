@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  inngest:
+    image: inngest/inngest:v0.38.0
+    container_name: beema-inngest-dev
+    command: inngest dev
+    ports:
+      - "8288:8288"
+    environment:
+      - INNGEST_DEV_SERVER_PORT=8288
+      - INNGEST_SIGNING_KEY=test-signing-key
+      - INNGEST_LOG_LEVEL=debug
+      - INNGEST_EVENT_STREAM_SIZE=1000
+    networks:
+      - beema-network
+    volumes:
+      - inngest_dev_data:/app/.inngest
+    restart: unless-stopped
+
+volumes:
+  inngest_dev_data:

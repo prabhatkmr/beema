@@ -16,11 +16,13 @@ docker-compose ps
 
 # 4. Verify setup
 ./docker-compose-verify.sh
+./scripts/verify-inngest-setup.sh
 
 # 5. Access services
 open http://localhost:3000      # Studio UI
 open http://localhost:8080      # Beema Kernel API
 open http://localhost:8088      # Temporal UI
+open http://localhost:8288      # Inngest Dev UI
 ```
 
 ## Service URLs
@@ -31,6 +33,7 @@ open http://localhost:8088      # Temporal UI
 | **Beema Kernel API** | http://localhost:8080 | - |
 | **Swagger UI** | http://localhost:8080/swagger-ui.html | - |
 | **Temporal UI** | http://localhost:8088 | - |
+| **Inngest Dev UI** | http://localhost:8288 | - |
 | **Keycloak Admin** | http://localhost:8180 | admin / admin |
 | **Metadata Service** | http://localhost:8082 | - |
 | **PostgreSQL** | localhost:5433 | beema / beema |
@@ -113,6 +116,29 @@ Then view the workflow execution:
 - **Temporal UI**: http://localhost:8088
 - Navigate to "Workflows" tab
 - Find workflow with ID containing the policy number
+
+## Test Event Flow
+
+Run the comprehensive event flow test:
+
+```bash
+# Test Inngest event flow
+./scripts/test-inngest-events.sh
+```
+
+Or manually publish test events:
+
+```bash
+# Publish Policy Bound event
+curl -X POST http://localhost:8080/api/v1/events/test/policy-bound
+
+# Publish Claim Opened event
+curl -X POST http://localhost:8080/api/v1/events/test/claim-opened
+```
+
+Monitor events:
+- **Inngest UI**: http://localhost:8288 (see events in real-time)
+- **Studio Webhooks**: http://localhost:3000/webhooks (view deliveries)
 
 ## Temporal CLI Commands
 
@@ -218,7 +244,7 @@ Services start in this order:
 ```
 postgres (10s)
     ↓
-temporal (30s) + keycloak (20s) + zookeeper (10s)
+temporal (30s) + keycloak (20s) + zookeeper (10s) + inngest (10s)
     ↓
 temporal-ui (5s) + metadata-service (30s) + kafka (20s)
     ↓
@@ -291,6 +317,7 @@ docker exec beema-postgres pg_isready -U beema
 | 8082  | Metadata Service     |
 | 8088  | Temporal UI          |
 | 8180  | Keycloak             |
+| 8288  | Inngest Dev Server   |
 | 9092  | Kafka (external)     |
 | 29092 | Kafka (internal)     |
 
@@ -303,15 +330,17 @@ docker exec beema-postgres pg_isready -U beema
 - ✅ Metadata Service (metadata-driven config)
 - ✅ Keycloak 23.0 (OAuth2/OIDC)
 - ✅ Kafka 7.6.0 (message broker)
+- ✅ Inngest Dev Server v0.38.0 (event infrastructure)
 - ✅ Studio (React frontend)
 - ✅ Message Processor (Flink)
 
 ## Documentation
 
 - **Full Setup Guide**: [DOCKER_SETUP.md](DOCKER_SETUP.md)
+- **Inngest Setup**: [INNGEST_SETUP.md](../INNGEST_SETUP.md)
 - **Detailed README**: [docker-compose.README.md](docker-compose.README.md)
 - **Integration Details**: [TEMPORAL_INTEGRATION_SUMMARY.md](TEMPORAL_INTEGRATION_SUMMARY.md)
-- **Environment Config**: [.env.example](.env.example)
+- **Environment Config**: [.env.example](../.env.example)
 
 ## Need Help?
 

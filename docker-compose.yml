@@ -163,6 +163,11 @@ services:
       TEMPORAL_MAX_CONCURRENT_ACTIVITIES: 10
       TEMPORAL_MAX_CONCURRENT_WORKFLOWS: 10
 
+      # Inngest configuration
+      INNGEST_EVENT_KEY: local
+      INNGEST_SIGNING_KEY: test-signing-key
+      INNGEST_BASE_URL: http://inngest:8288
+
       # Spring profiles (uncomment if needed)
       # SPRING_PROFILES_ACTIVE: dev,json-logging
     ports:
@@ -175,6 +180,8 @@ services:
       metadata-service:
         condition: service_healthy
       temporal:
+        condition: service_healthy
+      inngest:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
@@ -437,6 +444,27 @@ services:
         /opt/flink/usrlib/beema-message-processor.jar
       "
 
+  # Inngest Dev Server
+  inngest:
+    image: inngest/inngest:v0.38.0
+    container_name: beema-inngest
+    command: inngest dev
+    ports:
+      - "8288:8288"  # Inngest Dev Server UI and API
+    environment:
+      - INNGEST_DEV_SERVER_PORT=8288
+      - INNGEST_SIGNING_KEY=test-signing-key
+      - INNGEST_LOG_LEVEL=info
+    networks:
+      - beema-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8288/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - inngest_data:/app/.inngest
+
   # Beema Studio - Visual Message Blueprint Editor
   studio:
     build:
@@ -445,9 +473,14 @@ services:
     container_name: beema-studio
     environment:
       VITE_API_BASE_URL: http://beema-kernel:8080/api/v1
+      INNGEST_EVENT_KEY: local
+      INNGEST_SIGNING_KEY: test-signing-key
+      NEXT_PUBLIC_INNGEST_URL: http://localhost:8288
     ports:
       - "3000:80"
     depends_on:
+      inngest:
+        condition: service_healthy
       beema-kernel:
         condition: service_healthy
     healthcheck:
@@ -473,6 +506,8 @@ volumes:
   flink_checkpoints:
     driver: local
   flink_savepoints:
+    driver: local
+  inngest_data:
     driver: local
   # redpanda_data:  # Uncomment if using Redpanda
   #   driver: local

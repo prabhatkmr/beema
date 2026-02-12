@@ -5,6 +5,9 @@ import com.beema.kernel.domain.agreement.AgreementStatus;
 import com.beema.kernel.domain.agreement.MarketContext;
 import com.beema.kernel.domain.base.TemporalKey;
 import com.beema.kernel.domain.metadata.MetadataAgreementType;
+import com.beema.kernel.event.AgreementUpdatedEvent;
+import com.beema.kernel.event.DomainEventPublisher;
+import com.beema.kernel.event.PolicyBoundEvent;
 import com.beema.kernel.repository.agreement.AgreementRepository;
 import com.beema.kernel.service.expression.ExpressionEvaluator;
 import com.beema.kernel.service.metadata.MetadataService;
@@ -35,13 +38,16 @@ public class AgreementServiceImpl implements AgreementService {
     private final AgreementRepository agreementRepository;
     private final MetadataService metadataService;
     private final ExpressionEvaluator expressionEvaluator;
+    private final DomainEventPublisher eventPublisher;
 
     public AgreementServiceImpl(AgreementRepository agreementRepository,
                                 MetadataService metadataService,
-                                ExpressionEvaluator expressionEvaluator) {
+                                ExpressionEvaluator expressionEvaluator,
+                                DomainEventPublisher eventPublisher) {
         this.agreementRepository = agreementRepository;
         this.metadataService = metadataService;
         this.expressionEvaluator = expressionEvaluator;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -56,6 +62,10 @@ public class AgreementServiceImpl implements AgreementService {
         Agreement saved = agreementRepository.save(agreement);
         log.info("Created agreement {} [{}] for tenant {}",
                 saved.getAgreementNumber(), saved.getMarketContext(), saved.getTenantId());
+
+        // Publish PolicyBound event
+        publishPolicyBoundEvent(saved);
+
         return saved;
     }
 
@@ -86,6 +96,10 @@ public class AgreementServiceImpl implements AgreementService {
         Agreement saved = agreementRepository.save(update);
         log.info("Updated agreement {} - new version at {}",
                 saved.getAgreementNumber(), saved.getTemporalKey().getTransactionTime());
+
+        // Publish AgreementUpdated event
+        publishAgreementUpdatedEvent(saved, "version_update");
+
         return saved;
     }
 
@@ -198,5 +212,72 @@ public class AgreementServiceImpl implements AgreementService {
         }
 
         return errors;
+    }
+
+    /**
+     * Publish PolicyBound event to Inngest
+     */
+    private void publishPolicyBoundEvent(Agreement agreement) {
+        try {
+            PolicyBoundEvent event = new PolicyBoundEvent(
+                agreement.getAgreementNumber(),
+                agreement.getTemporalKey().getId().toString(),
+                agreement.getMarketContext().name()
+            );
+
+            // Add additional context
+            event.withData("agreementTypeId", agreement.getAgreementTypeId());
+            event.withData("status", agreement.getStatus().name());
+            if (agreement.getTotalPremium() != null) {
+                event.withData("premium", agreement.getTotalPremium());
+            }
+            if (agreement.getInceptionDate() != null) {
+                event.withData("inceptionDate", agreement.getInceptionDate().toString());
+            }
+            if (agreement.getExpiryDate() != null) {
+                event.withData("expiryDate", agreement.getExpiryDate().toString());
+            }
+
+            eventPublisher.publishWithMetadata(
+                event,
+                agreement.getTenantId().toString(),
+                "system",
+                "system@beema.io"
+            );
+        } catch (Exception e) {
+            log.error("Failed to publish PolicyBound event for agreement: {}",
+                agreement.getAgreementNumber(), e);
+        }
+    }
+
+    /**
+     * Publish AgreementUpdated event to Inngest
+     */
+    private void publishAgreementUpdatedEvent(Agreement agreement, String changeType) {
+        try {
+            Map<String, Object> changes = Map.of(
+                "status", agreement.getStatus().name(),
+                "transactionTime", agreement.getTemporalKey().getTransactionTime().toString()
+            );
+
+            AgreementUpdatedEvent event = new AgreementUpdatedEvent(
+                agreement.getTemporalKey().getId().toString(),
+                changeType,
+                changes
+            );
+
+            event.withData("agreementNumber", agreement.getAgreementNumber());
+            event.withData("marketContext", agreement.getMarketContext().name());
+
+            eventPublisher.publishWithMetadata(
+                event,
+                agreement.getTenantId().toString(),
+                "system",
+                "system@beema.io"
+            );
+        } catch (Exception e) {
+            log.error("Failed to publish AgreementUpdated event for agreement: {}",
+                agreement.getAgreementNumber(), e);
+        }
     }
 }

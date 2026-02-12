@@ -2,6 +2,8 @@ package com.beema.kernel.config;
 
 import com.beema.kernel.workflow.policy.PolicySnapshotActivityImpl;
 import com.beema.kernel.workflow.policy.PolicyWorkflowImpl;
+import com.beema.kernel.workflow.claim.AgentActivitiesImpl;
+import com.beema.kernel.workflow.claim.ClaimWorkflowImpl;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -27,6 +29,7 @@ public class TemporalConfig {
 
     private static final Logger log = LoggerFactory.getLogger(TemporalConfig.class);
     private static final String POLICY_TASK_QUEUE = "POLICY_TASK_QUEUE";
+    private static final String CLAIM_TASK_QUEUE = "CLAIM_TASK_QUEUE";
 
     @Value("${temporal.service.host:localhost}")
     private String temporalHost;
@@ -111,6 +114,26 @@ public class TemporalConfig {
         worker.registerActivitiesImplementations(activityImpl);
 
         log.info("Policy Worker configured successfully with workflow and activity implementations");
+        return worker;
+    }
+
+    /**
+     * Create and configure the Claim Worker for AI-powered claim analysis
+     */
+    @Bean
+    public Worker claimWorker(WorkerFactory workerFactory,
+                               AgentActivitiesImpl agentActivities) {
+        log.info("Creating Claim Worker: taskQueue={}", CLAIM_TASK_QUEUE);
+
+        Worker worker = workerFactory.newWorker(CLAIM_TASK_QUEUE);
+
+        // Register workflow implementations
+        worker.registerWorkflowImplementationTypes(ClaimWorkflowImpl.class);
+
+        // Register activity implementations
+        worker.registerActivitiesImplementations(agentActivities);
+
+        log.info("Claim Worker configured successfully with AI agent activities");
         return worker;
     }
 
