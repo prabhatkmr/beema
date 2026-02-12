@@ -1,0 +1,38 @@
+# Test configuration using Testcontainers
+
+spring:
+  datasource:
+    # Testcontainers will override these values
+    url: jdbc:tc:postgresql:15:///beema_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    clean-disabled: false  # Allow clean in tests
+
+  # Disable security for tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/mock
+
+# Test-specific configuration
+beema:
+  kernel:
+    multi-tenancy:
+      enabled: true
+      default-tenant: test-tenant
+
+    metadata:
+      cache-ttl: 1  # Short cache for tests
+
+logging:
+  level:
+    com.beema.kernel: DEBUG
+    org.testcontainers: INFO
