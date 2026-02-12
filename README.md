@@ -195,7 +195,7 @@ docker-compose up -d
 
 **Services included:**
 - PostgreSQL 16 (port 5433) - Shared database
-- Keycloak (port 8090) - Authentication
+- Keycloak (port 8180) - Authentication
 - Temporal Server (port 7233) - Workflow engine
 - Temporal UI (port 8088) - Workflow monitoring
 - Zookeeper + Kafka (port 9092) - Message broker
@@ -211,7 +211,7 @@ docker-compose up -d
 - Studio UI: http://localhost:3000
 - Beema Kernel API: http://localhost:8080/swagger-ui
 - Temporal UI: http://localhost:8088
-- Keycloak: http://localhost:8090
+- Keycloak: http://localhost:8180
 - **Grafana (Observability)**: http://localhost:3001 (admin/admin)
 - **Jaeger (Tracing)**: http://localhost:16686
 - **Prometheus (Metrics)**: http://localhost:9090
