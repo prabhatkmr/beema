@@ -2,7 +2,6 @@ package com.beema.kernel.domain.metadata;
 
 import com.beema.kernel.domain.agreement.MarketContext;
 import com.beema.kernel.util.JsonbConverter;
-import com.beema.kernel.util.StringArrayConverter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -13,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -54,13 +55,13 @@ public class MetadataAttribute {
     @Column(name = "max_value")
     private BigDecimal maxValue;
 
-    @Convert(converter = JsonbConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "allowed_values", columnDefinition = "JSONB")
-    private Map<String, Object> allowedValues;
+    private Object allowedValues;
 
-    @Convert(converter = JsonbConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "default_value", columnDefinition = "JSONB")
-    private Map<String, Object> defaultValue;
+    private Object defaultValue;
 
     @Column(name = "is_required", nullable = false)
     private Boolean isRequired = false;
@@ -75,7 +76,7 @@ public class MetadataAttribute {
     private Integer uiOrder = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "market_context", nullable = false, columnDefinition = "market_context_type")
+    @Column(name = "market_context", nullable = false)
     private MarketContext marketContext;
 
     @Column(name = "category", length = 100)
@@ -88,7 +89,7 @@ public class MetadataAttribute {
     private String calculationScript;
 
     @Column(name = "depends_on", columnDefinition = "TEXT[]")
-    @Convert(converter = StringArrayConverter.class)
+    @JdbcTypeCode(SqlTypes.ARRAY)
     private List<String> dependsOn;
 
     @Column(name = "is_active", nullable = false)
@@ -181,19 +182,19 @@ public class MetadataAttribute {
         this.maxValue = maxValue;
     }
 
-    public Map<String, Object> getAllowedValues() {
+    public Object getAllowedValues() {
         return allowedValues;
     }
 
-    public void setAllowedValues(Map<String, Object> allowedValues) {
+    public void setAllowedValues(Object allowedValues) {
         this.allowedValues = allowedValues;
     }
 
-    public Map<String, Object> getDefaultValue() {
+    public Object getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(Map<String, Object> defaultValue) {
+    public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
 

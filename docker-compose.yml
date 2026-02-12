@@ -374,7 +374,6 @@ services:
   # Flink TaskManager (Worker)
   flink-taskmanager:
     image: flink:1.18.1-java21
-    container_name: beema-flink-taskmanager
     depends_on:
       flink-jobmanager:
         condition: service_healthy

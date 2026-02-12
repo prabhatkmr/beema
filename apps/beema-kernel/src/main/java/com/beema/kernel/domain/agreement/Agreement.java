@@ -30,7 +30,7 @@ public class Agreement extends BitemporalEntity {
     private String externalReference;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "market_context", nullable = false, columnDefinition = "market_context_type")
+    @Column(name = "market_context", nullable = false)
     private MarketContext marketContext;
 
     @Column(name = "agreement_type_id", nullable = false)

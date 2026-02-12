@@ -8,7 +8,10 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.beema.kernel.repository")
+@EnableJpaRepositories(basePackages = {
+    "com.beema.kernel.repository",
+    "com.beema.kernel.domain.message"
+})
 @EnableTransactionManagement
 public class DatabaseConfig {
 

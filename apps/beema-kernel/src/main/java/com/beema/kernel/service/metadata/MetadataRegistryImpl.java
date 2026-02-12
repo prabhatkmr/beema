@@ -455,7 +455,8 @@ public class MetadataRegistryImpl implements MetadataRegistry {
         }
 
         MetadataAgreementType agreementType = typeOpt.get();
-        Map<String, Object> uiConfig = agreementType.getUiConfiguration();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> uiConfig = (Map<String, Object>) agreementType.getUiConfiguration();
         if (uiConfig == null || uiConfig.isEmpty()) {
             return Optional.empty();
         }
@@ -495,9 +496,10 @@ public class MetadataRegistryImpl implements MetadataRegistry {
     // Helpers
     // -----------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     private FieldDefinition toFieldDefinition(MetadataAttribute attr, MetadataTypeAttribute override) {
         boolean isRequired = attr.getIsRequired();
-        Map<String, Object> defaultValue = attr.getDefaultValue();
+        Map<String, Object> defaultValue = (Map<String, Object>) attr.getDefaultValue();
         int uiOrder = attr.getUiOrder();
         String sectionName = null;
 
@@ -524,7 +526,7 @@ public class MetadataRegistryImpl implements MetadataRegistry {
                 attr.getValidationPattern(),
                 attr.getMinValue(),
                 attr.getMaxValue(),
-                attr.getAllowedValues(),
+                (Map<String, Object>) attr.getAllowedValues(),
                 defaultValue,
                 isRequired,
                 attr.getIsSearchable(),

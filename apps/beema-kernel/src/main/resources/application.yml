@@ -26,6 +26,7 @@ spring:
     baseline-on-migrate: false
     validate-on-migrate: true
     out-of-order: false
+    placeholder-replacement: false  # Disable placeholder replacement for JEXL expressions
 
   jpa:
     hibernate:
@@ -55,6 +56,21 @@ spring:
         jwt:
           issuer-uri: ${OAUTH2_ISSUER_URI:https://auth.beema.local/realms/beema}
           jwk-set-uri: ${OAUTH2_JWK_SET_URI:https://auth.beema.local/realms/beema/protocol/openid-connect/certs}
+
+  # Spring AI Configuration (compatible with OpenRouter)
+  ai:
+    openai:
+      # OpenRouter endpoint (compatible with OpenAI API)
+      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+      api-key: ${OPENROUTER_API_KEY:sk-placeholder}
+      chat:
+        options:
+          # OpenRouter model format: provider/model-name
+          model: ${OPENROUTER_MODEL:openai/gpt-4-turbo-preview}
+          temperature: 0.3
+          max-tokens: 2000
+      embedding:
+        enabled: false
 
 management:
   endpoints:
@@ -154,27 +170,6 @@ beema:
     openrouter:
       site-url: ${OPENROUTER_REFERER:https://beema.io}
       app-name: ${OPENROUTER_APP_NAME:Beema Insurance Platform}
-
-# Spring AI Configuration (compatible with OpenRouter)
-spring:
-  ai:
-    openai:
-      # OpenRouter endpoint (compatible with OpenAI API)
-      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
-      api-key: ${OPENROUTER_API_KEY:sk-placeholder}
-      chat:
-        options:
-          # OpenRouter model format: provider/model-name
-          # Examples:
-          # - openai/gpt-4-turbo-preview
-          # - anthropic/claude-3-opus-20240229
-          # - google/gemini-pro-1.5
-          # - meta-llama/llama-3.1-70b-instruct
-          model: ${OPENROUTER_MODEL:openai/gpt-4-turbo-preview}
-          temperature: 0.3
-          max-tokens: 2000
-      embedding:
-        enabled: false
 
 ---
 spring:

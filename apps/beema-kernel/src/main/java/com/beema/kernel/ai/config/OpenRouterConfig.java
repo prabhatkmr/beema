@@ -18,8 +18,10 @@ import org.springframework.web.reactive.function.client.WebClient;
  * Configures Spring AI to use OpenRouter endpoint instead of OpenAI directly.
  * OpenRouter provides access to multiple LLM providers (OpenAI, Anthropic, Google, etc.)
  * through a single unified API.
+ *
+ * NOTE: Temporarily disabled - using Spring AI auto-configuration from application.yml
  */
-@Configuration
+//@Configuration
 public class OpenRouterConfig {
 
     @Value("${spring.ai.openai.api-key}")
@@ -79,8 +81,6 @@ public class OpenRouterConfig {
         return new OpenAiChatModel(openRouterApi, options);
     }
 
-    @Bean
-    public ChatClient.Builder chatClientBuilder(OpenAiChatModel openRouterChatModel) {
-        return ChatClient.builder(openRouterChatModel);
-    }
+    // Note: ChatClient.Builder is auto-configured by Spring AI
+    // No need to define it here - Spring will use our openRouterChatModel bean
 }

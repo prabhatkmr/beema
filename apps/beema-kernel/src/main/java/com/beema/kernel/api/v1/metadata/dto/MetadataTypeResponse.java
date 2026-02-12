@@ -65,9 +65,15 @@ public class MetadataTypeResponse {
         response.setDescription(entity.getDescription());
         response.setMarketContext(entity.getMarketContext());
         response.setSchemaVersion(entity.getSchemaVersion());
-        response.setAttributeSchema(entity.getAttributeSchema());
-        response.setValidationRules(entity.getValidationRules());
-        response.setUiConfiguration(entity.getUiConfiguration());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> attributeSchema = (Map<String, Object>) entity.getAttributeSchema();
+        response.setAttributeSchema(attributeSchema);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> validationRules = (Map<String, Object>) entity.getValidationRules();
+        response.setValidationRules(validationRules);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> uiConfiguration = (Map<String, Object>) entity.getUiConfiguration();
+        response.setUiConfiguration(uiConfiguration);
         response.setIsActive(entity.getIsActive());
         response.setCreatedAt(entity.getCreatedAt());
         response.setUpdatedAt(entity.getUpdatedAt());

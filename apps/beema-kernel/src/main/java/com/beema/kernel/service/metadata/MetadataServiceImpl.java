@@ -138,7 +138,8 @@ public class MetadataServiceImpl implements MetadataService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Agreement type not found for validation: " + agreementTypeId));
 
-        Map<String, Object> schema = agreementType.getAttributeSchema();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> schema = (Map<String, Object>) agreementType.getAttributeSchema();
         if (schema == null || schema.isEmpty()) {
             log.debug("No schema defined for agreement type {}, skipping validation", agreementTypeId);
             return ValidationResult.valid();

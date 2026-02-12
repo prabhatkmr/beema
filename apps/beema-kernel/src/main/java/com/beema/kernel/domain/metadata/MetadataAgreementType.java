@@ -43,7 +43,7 @@ public class MetadataAgreementType {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "market_context", nullable = false, columnDefinition = "market_context_type")
+    @Column(name = "market_context", nullable = false)
     private MarketContext marketContext;
 
     @Column(name = "schema_version", nullable = false)
@@ -51,15 +51,15 @@ public class MetadataAgreementType {
 
     @Convert(converter = JsonbConverter.class)
     @Column(name = "attribute_schema", nullable = false, columnDefinition = "JSONB")
-    private Map<String, Object> attributeSchema;
+    private Object attributeSchema;
 
     @Convert(converter = JsonbConverter.class)
     @Column(name = "validation_rules", nullable = false, columnDefinition = "JSONB")
-    private Map<String, Object> validationRules;
+    private Object validationRules;
 
     @Convert(converter = JsonbConverter.class)
     @Column(name = "ui_configuration", nullable = false, columnDefinition = "JSONB")
-    private Map<String, Object> uiConfiguration;
+    private Object uiConfiguration;
 
     @Convert(converter = JsonbListConverter.class)
     @Column(name = "calculation_rules", nullable = false, columnDefinition = "JSONB")
@@ -139,27 +139,27 @@ public class MetadataAgreementType {
         this.schemaVersion = schemaVersion;
     }
 
-    public Map<String, Object> getAttributeSchema() {
+    public Object getAttributeSchema() {
         return attributeSchema;
     }
 
-    public void setAttributeSchema(Map<String, Object> attributeSchema) {
+    public void setAttributeSchema(Object attributeSchema) {
         this.attributeSchema = attributeSchema;
     }
 
-    public Map<String, Object> getValidationRules() {
+    public Object getValidationRules() {
         return validationRules;
     }
 
-    public void setValidationRules(Map<String, Object> validationRules) {
+    public void setValidationRules(Object validationRules) {
         this.validationRules = validationRules;
     }
 
-    public Map<String, Object> getUiConfiguration() {
+    public Object getUiConfiguration() {
         return uiConfiguration;
     }
 
-    public void setUiConfiguration(Map<String, Object> uiConfiguration) {
+    public void setUiConfiguration(Object uiConfiguration) {
         this.uiConfiguration = uiConfiguration;
     }
 

@@ -1,5 +1,7 @@
 package com.beema.kernel.api.exception;
 
+import com.beema.kernel.api.v1.integration.InboundWebhookController;
+import com.beema.kernel.service.integration.WebhookTransformationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -56,6 +58,27 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         log.warn("Method argument not valid: {}", message);
         return buildResponse(HttpStatus.BAD_REQUEST, "Validation Error", message, request);
+    }
+
+    @ExceptionHandler(InboundWebhookController.InvalidSignatureException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidSignature(
+            InboundWebhookController.InvalidSignatureException ex, HttpServletRequest request) {
+        log.warn("Invalid webhook signature: {}", ex.getMessage());
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InboundWebhookController.WebhookTransformationException.class)
+    public ResponseEntity<Map<String, Object>> handleWebhookTransformation(
+            InboundWebhookController.WebhookTransformationException ex, HttpServletRequest request) {
+        log.warn("Webhook transformation failed: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Transformation Error", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(WebhookTransformationService.WebhookTransformationException.class)
+    public ResponseEntity<Map<String, Object>> handleTransformationService(
+            WebhookTransformationService.WebhookTransformationException ex, HttpServletRequest request) {
+        log.warn("Webhook transformation service error: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Transformation Error", ex.getMessage(), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

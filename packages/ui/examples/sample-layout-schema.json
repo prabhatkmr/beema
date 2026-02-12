@@ -1,0 +1,215 @@
+{
+  "title": "Motor Comprehensive Policy",
+  "sections": [
+    {
+      "id": "vehicle-details",
+      "title": "Vehicle Details",
+      "layout": "grid",
+      "columns": 2,
+      "fields": [
+        {
+          "id": "registration_number",
+          "label": "Registration Number",
+          "widget": "TEXT_INPUT",
+          "required": true,
+          "placeholder": "e.g., ABC123",
+          "validation": {
+            "pattern": "^[A-Z0-9]{6,8}$",
+            "minLength": 6,
+            "maxLength": 8
+          }
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "widget": "SELECT",
+          "required": true,
+          "options": [
+            { "label": "Toyota", "value": "toyota" },
+            { "label": "Honda", "value": "honda" },
+            { "label": "Ford", "value": "ford" },
+            { "label": "BMW", "value": "bmw" }
+          ]
+        },
+        {
+          "id": "model",
+          "label": "Model",
+          "widget": "TEXT_INPUT",
+          "required": true,
+          "placeholder": "e.g., Corolla"
+        },
+        {
+          "id": "year",
+          "label": "Year of Manufacture",
+          "widget": "NUMBER_INPUT",
+          "required": true,
+          "validation": {
+            "min": 1990,
+            "max": 2026
+          }
+        },
+        {
+          "id": "engine_capacity",
+          "label": "Engine Capacity (cc)",
+          "widget": "NUMBER_INPUT",
+          "required": true,
+          "placeholder": "e.g., 1500",
+          "validation": {
+            "min": 600,
+            "max": 8000
+          }
+        },
+        {
+          "id": "current_value",
+          "label": "Current Market Value",
+          "widget": "CURRENCY_INPUT",
+          "required": true,
+          "placeholder": "e.g., 25000",
+          "validation": {
+            "min": 1000,
+            "max": 10000000
+          }
+        }
+      ]
+    },
+    {
+      "id": "policy-details",
+      "title": "Policy Details",
+      "layout": "grid",
+      "columns": 2,
+      "fields": [
+        {
+          "id": "policy_start_date",
+          "label": "Policy Start Date",
+          "widget": "DATE_PICKER",
+          "required": true
+        },
+        {
+          "id": "policy_end_date",
+          "label": "Policy End Date",
+          "widget": "DATE_PICKER",
+          "required": true
+        },
+        {
+          "id": "coverage_type",
+          "label": "Coverage Type",
+          "widget": "SELECT",
+          "required": true,
+          "options": [
+            { "label": "Third Party Only", "value": "third_party" },
+            { "label": "Third Party Fire & Theft", "value": "third_party_fire_theft" },
+            { "label": "Comprehensive", "value": "comprehensive" }
+          ]
+        },
+        {
+          "id": "excess_amount",
+          "label": "Voluntary Excess",
+          "widget": "CURRENCY_INPUT",
+          "required": false,
+          "defaultValue": 0,
+          "validation": {
+            "min": 0,
+            "max": 5000
+          }
+        },
+        {
+          "id": "no_claims_discount",
+          "label": "No Claims Discount (%)",
+          "widget": "PERCENTAGE_INPUT",
+          "required": false,
+          "defaultValue": 0,
+          "validation": {
+            "min": 0,
+            "max": 75
+          }
+        }
+      ]
+    },
+    {
+      "id": "driver-details",
+      "title": "Main Driver Details",
+      "layout": "grid",
+      "columns": 2,
+      "fields": [
+        {
+          "id": "driver_name",
+          "label": "Full Name",
+          "widget": "TEXT_INPUT",
+          "required": true,
+          "placeholder": "John Doe"
+        },
+        {
+          "id": "driver_dob",
+          "label": "Date of Birth",
+          "widget": "DATE_PICKER",
+          "required": true
+        },
+        {
+          "id": "license_number",
+          "label": "License Number",
+          "widget": "TEXT_INPUT",
+          "required": true,
+          "placeholder": "e.g., DL123456"
+        },
+        {
+          "id": "years_licensed",
+          "label": "Years Holding License",
+          "widget": "NUMBER_INPUT",
+          "required": true,
+          "validation": {
+            "min": 0,
+            "max": 70
+          }
+        },
+        {
+          "id": "previous_claims",
+          "label": "Any claims in last 5 years?",
+          "widget": "CHECKBOX",
+          "required": false,
+          "defaultValue": false
+        }
+      ]
+    },
+    {
+      "id": "additional-coverage",
+      "title": "Additional Coverage Options",
+      "layout": "stack",
+      "fields": [
+        {
+          "id": "breakdown_cover",
+          "label": "Breakdown Cover",
+          "widget": "CHECKBOX",
+          "required": false,
+          "defaultValue": false
+        },
+        {
+          "id": "windscreen_cover",
+          "label": "Windscreen Cover",
+          "widget": "CHECKBOX",
+          "required": false,
+          "defaultValue": false
+        },
+        {
+          "id": "legal_protection",
+          "label": "Legal Protection",
+          "widget": "CHECKBOX",
+          "required": false,
+          "defaultValue": false
+        },
+        {
+          "id": "courtesy_car",
+          "label": "Courtesy Car",
+          "widget": "CHECKBOX",
+          "required": false,
+          "defaultValue": false
+        }
+      ]
+    }
+  ],
+  "_metadata": {
+    "layoutId": "layout_motor_comprehensive_001",
+    "layoutName": "Motor Comprehensive Policy Form",
+    "version": 1,
+    "context": "RETAIL"
+  }
+}
