@@ -13,7 +13,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime with Flink
-FROM flink:1.18.1-java21
+FROM flink:1.18.1
 WORKDIR /opt/flink
 
 # Copy the fat JAR from build stage

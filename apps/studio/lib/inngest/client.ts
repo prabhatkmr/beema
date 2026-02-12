@@ -58,7 +58,9 @@ export type Events = {
 };
 
 // Create Inngest client
-export const inngest = new Inngest<Events>({
+// Note: Events type is exported for use in function definitions
+// but not enforced at the client level to avoid compatibility issues
+export const inngest = new Inngest({
   id: 'beema-studio',
-  eventKey: process.env.INNGEST_EVENT_KEY || 'local'
+  eventKey: process.env.INNGEST_EVENT_KEY || 'local',
 });

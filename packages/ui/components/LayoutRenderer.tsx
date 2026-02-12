@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { LayoutSchema, SectionDefinition, FieldDefinition } from '../types/layout';
 import { getWidgetComponent } from './WidgetRegistry';

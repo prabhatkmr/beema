@@ -56,7 +56,7 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
           <Label required>Label</Label>
           <Input
             value={field.label}
-            onChange={(e) => onUpdate({ label: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ label: e.target.value })}
           />
         </div>
 
@@ -64,7 +64,7 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
           <Label required>Field Name</Label>
           <Input
             value={field.name}
-            onChange={(e) => onUpdate({ name: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ name: e.target.value })}
           />
           <p className="text-xs text-gray-500 mt-1">Used for data binding</p>
         </div>
@@ -73,7 +73,7 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
           <Label>Placeholder</Label>
           <Input
             value={field.placeholder || ''}
-            onChange={(e) => onUpdate({ placeholder: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ placeholder: e.target.value })}
           />
         </div>
 
@@ -81,7 +81,7 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
           <Label>Width</Label>
           <select
             value={field.width || 'full'}
-            onChange={(e) => onUpdate({ width: e.target.value as any })}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onUpdate({ width: e.target.value as any })}
             className="w-full border rounded px-3 py-2"
           >
             <option value="full">Full Width</option>
@@ -96,7 +96,7 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
             <input
               type="checkbox"
               checked={field.required}
-              onChange={(e) => onUpdate({ required: e.target.checked })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ required: e.target.checked })}
             />
             <span className="text-sm font-medium">Required Field</span>
           </label>
@@ -111,12 +111,12 @@ export function PropertiesPanel({ field, onUpdate, onClose }: PropertiesPanelPro
                   <Input
                     placeholder="Label"
                     value={option.label}
-                    onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleOptionChange(index, 'label', e.target.value)}
                   />
                   <Input
                     placeholder="Value"
                     value={option.value}
-                    onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleOptionChange(index, 'value', e.target.value)}
                   />
                   <button
                     onClick={() => handleRemoveOption(index)}

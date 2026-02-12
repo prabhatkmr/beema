@@ -1,3 +1,5 @@
+'use client';
+
 import { WidgetType } from '../types/layout';
 import { TextInputWidget } from './widgets/TextInputWidget';
 import { NumberInputWidget } from './widgets/NumberInputWidget';

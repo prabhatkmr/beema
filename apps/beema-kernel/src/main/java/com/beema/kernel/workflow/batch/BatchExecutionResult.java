@@ -1,13 +1,14 @@
 package com.beema.kernel.workflow.batch;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public record BatchExecutionResult(
         Long jobExecutionId,
         String jobName,
         String status,
-        Date startTime,
-        Date endTime,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
         long readCount,
         long writeCount,
         long skipCount,
@@ -20,6 +21,6 @@ public record BatchExecutionResult(
 
     public long getDurationMillis() {
         if (startTime == null || endTime == null) return 0;
-        return endTime.getTime() - startTime.getTime();
+        return Duration.between(startTime, endTime).toMillis();
     }
 }

@@ -4,6 +4,7 @@ import com.beema.processor.model.MessageHookMetadata;
 import com.beema.processor.model.RawMessage;
 import com.beema.processor.model.TransformedMessage;
 import com.beema.processor.service.JexlTransformService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
@@ -37,9 +38,11 @@ public class JexlMessageTransformer extends BroadcastProcessFunction<RawMessage,
             new MapStateDescriptor<>("MessageHooks", String.class, String.class);
 
     private final JexlTransformService jexlService;
+    private final ObjectMapper objectMapper;
 
     public JexlMessageTransformer(JexlTransformService jexlService) {
         this.jexlService = jexlService;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -53,8 +56,10 @@ public class JexlMessageTransformer extends BroadcastProcessFunction<RawMessage,
         if (jexlScript != null && !jexlScript.isBlank()) {
             try {
                 // 2. Execute the Sandboxed JEXL Engine
-                // message.getPayload() contains the raw message fields as Map<String, Object>
-                Map<String, Object> resultData = jexlService.transform(message.getPayload(), jexlScript);
+                // Convert JsonNode payload to Map<String, Object>
+                @SuppressWarnings("unchecked")
+                Map<String, Object> payloadMap = objectMapper.convertValue(message.getPayload(), Map.class);
+                Map<String, Object> resultData = jexlService.transform(payloadMap, jexlScript);
 
                 // 3. Emit the transformed message to the 'beema-events' Kafka topic
                 TransformedMessage transformed = new TransformedMessage(
@@ -108,11 +113,15 @@ public class JexlMessageTransformer extends BroadcastProcessFunction<RawMessage,
      * Emits a passthrough message when no hook is found or transformation fails.
      */
     private void emitPassthrough(RawMessage message, Collector<TransformedMessage> out, String reason) {
+        // Convert JsonNode payload to Map<String, Object>
+        @SuppressWarnings("unchecked")
+        Map<String, Object> payloadMap = objectMapper.convertValue(message.getPayload(), Map.class);
+
         TransformedMessage passthrough = new TransformedMessage(
                 message.getMessageId(),
                 message.getMessageType(),
                 message.getSourceSystem(),
-                message.getPayload(), // Pass raw payload
+                payloadMap, // Pass raw payload as Map
                 reason
         );
         out.collect(passthrough);

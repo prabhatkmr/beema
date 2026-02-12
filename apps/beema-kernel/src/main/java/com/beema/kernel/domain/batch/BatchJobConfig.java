@@ -33,6 +33,9 @@ public class BatchJobConfig {
     @Column(name = "processor_jexl", nullable = false, columnDefinition = "TEXT")
     private String processorJexl;
 
+    @Column(name = "writer_sql", columnDefinition = "TEXT")
+    private String writerSql;
+
     @Column(name = "chunk_size")
     private Integer chunkSize = 1000;
 
@@ -106,6 +109,14 @@ public class BatchJobConfig {
 
     public void setProcessorJexl(String processorJexl) {
         this.processorJexl = processorJexl;
+    }
+
+    public String getWriterSql() {
+        return writerSql;
+    }
+
+    public void setWriterSql(String writerSql) {
+        this.writerSql = writerSql;
     }
 
     public Integer getChunkSize() {

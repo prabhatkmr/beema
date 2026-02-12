@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 // PUT /api/webhooks/:id - Update specific webhook
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const webhookId = params.id;
+    const { id } = await params;
+    const webhookId = id;
     const updates = await request.json();
 
     // Update in database
@@ -37,10 +38,11 @@ export async function PUT(
 // DELETE /api/webhooks/:id - Delete specific webhook
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const webhookId = params.id;
+    const { id } = await params;
+    const webhookId = id;
 
     // Delete from database
     // TODO: Replace with actual database deletion
@@ -63,10 +65,11 @@ export async function DELETE(
 // GET /api/webhooks/:id - Get specific webhook
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const webhookId = params.id;
+    const { id } = await params;
+    const webhookId = id;
 
     // Fetch from database
     // TODO: Replace with actual database query

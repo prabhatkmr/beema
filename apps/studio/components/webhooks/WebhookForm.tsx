@@ -79,7 +79,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
         <Label required>Webhook Name</Label>
         <Input
           value={formData.webhook_name}
-          onChange={(e) => setFormData({ ...formData, webhook_name: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, webhook_name: e.target.value })}
           placeholder="My Webhook"
           required
         />
@@ -89,7 +89,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
         <Label required>Event Type</Label>
         <select
           value={formData.event_type}
-          onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, event_type: e.target.value })}
           className="w-full border rounded px-3 py-2"
           required
         >
@@ -109,7 +109,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
         <Input
           type="url"
           value={formData.url}
-          onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, url: e.target.value })}
           placeholder="https://your-app.com/webhooks"
           required
         />
@@ -123,7 +123,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
         <div className="flex gap-2">
           <Input
             value={formData.secret}
-            onChange={(e) => setFormData({ ...formData, secret: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, secret: e.target.value })}
             placeholder="whsec_..."
             required
             readOnly
@@ -149,7 +149,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
               <Input
                 placeholder="Header-Name"
                 value={header.key}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const newHeaders = [...customHeaders];
                   newHeaders[index].key = e.target.value;
                   setCustomHeaders(newHeaders);
@@ -158,7 +158,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
               <Input
                 placeholder="value"
                 value={header.value}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const newHeaders = [...customHeaders];
                   newHeaders[index].value = e.target.value;
                   setCustomHeaders(newHeaders);
@@ -190,7 +190,7 @@ export function WebhookForm({ webhook, onSave, onCancel }: WebhookFormProps) {
           <input
             type="checkbox"
             checked={formData.enabled}
-            onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, enabled: e.target.checked })}
           />
           <span className="text-sm font-medium">Enabled</span>
         </label>

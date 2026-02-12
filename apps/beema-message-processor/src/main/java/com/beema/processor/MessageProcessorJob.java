@@ -7,19 +7,19 @@ import com.beema.processor.model.MessageHookMetadata;
 import com.beema.processor.model.RawMessage;
 import com.beema.processor.model.TransformedMessage;
 import com.beema.processor.processor.JexlMessageTransformer;
-import com.beema.processor.repository.MessageHookRepository;
 import com.beema.processor.service.JexlTransformService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +127,7 @@ public class MessageProcessorJob {
                 .name("Parse Hook Metadata");
 
         // Create broadcast stream with MapStateDescriptor
-        org.apache.flink.api.common.state.BroadcastStream<MessageHookMetadata> broadcastStream =
+        BroadcastStream<MessageHookMetadata> broadcastStream =
                 hookMetadataStream.broadcast(JexlMessageTransformer.HOOK_DESCRIPTOR);
 
         // Connect main stream with broadcast stream and apply JexlMessageTransformer
@@ -149,7 +149,7 @@ public class MessageProcessorJob {
                         KafkaRecordSerializationSchema.<TransformedMessage>builder()
                                 .setTopic(sinkTopicName)
                                 .setValueSerializationSchema(
-                                        (message, timestamp) -> {
+                                        (SerializationSchema<TransformedMessage>) message -> {
                                             try {
                                                 String json = objectMapper.writeValueAsString(message);
                                                 return json.getBytes(StandardCharsets.UTF_8);

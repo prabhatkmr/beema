@@ -99,12 +99,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - DB=postgresql
+      - DB=postgres12
       - DB_PORT=5432
       - POSTGRES_USER=beema
       - POSTGRES_PWD=beema
       - POSTGRES_SEEDS=postgres
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     ports:
       - "7233:7233"  # Temporal gRPC
     healthcheck:
@@ -135,7 +134,7 @@ services:
 
   # Jaeger - Distributed Tracing Backend
   jaeger:
-    image: jaegertracing/all-in-one:1.62
+    image: jaegertracing/all-in-one:latest
     container_name: beema-jaeger
     environment:
       - COLLECTOR_OTLP_ENABLED=true
@@ -422,7 +421,7 @@ services:
 
   # Flink JobManager (Master)
   flink-jobmanager:
-    image: flink:1.18.1-java21
+    image: flink:1.18.1
     container_name: beema-flink-jobmanager
     ports:
       - "8081:8081"  # Flink Web UI Dashboard
@@ -456,7 +455,7 @@ services:
 
   # Flink TaskManager (Worker)
   flink-taskmanager:
-    image: flink:1.18.1-java21
+    image: flink:1.18.1
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -528,7 +527,7 @@ services:
 
   # Inngest Dev Server
   inngest:
-    image: inngest/inngest:v0.38.0
+    image: inngest/inngest:latest
     container_name: beema-inngest
     command: inngest dev
     ports:
@@ -550,23 +549,23 @@ services:
   # Beema Studio - Visual Message Blueprint Editor
   studio:
     build:
-      context: ./apps/studio
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/studio/Dockerfile
     container_name: beema-studio
     environment:
-      VITE_API_BASE_URL: http://beema-kernel:8080/api/v1
+      NEXT_PUBLIC_API_BASE_URL: http://beema-kernel:8080/api/v1
       INNGEST_EVENT_KEY: local
       INNGEST_SIGNING_KEY: test-signing-key
       NEXT_PUBLIC_INNGEST_URL: http://localhost:8288
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       inngest:
         condition: service_healthy
       beema-kernel:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 3s
       retries: 3

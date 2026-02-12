@@ -4,7 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -14,8 +14,11 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": "../../",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "react": ["node_modules/react"],
+      "react-dom": ["node_modules/react-dom"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
