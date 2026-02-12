@@ -1,9 +1,12 @@
 package com.beema.kernel.config;
 
+import com.beema.kernel.workflow.policy.PolicyLifecycleWorkflowImpl;
 import com.beema.kernel.workflow.policy.PolicySnapshotActivityImpl;
 import com.beema.kernel.workflow.policy.PolicyWorkflowImpl;
 import com.beema.kernel.workflow.claim.AgentActivitiesImpl;
 import com.beema.kernel.workflow.claim.ClaimWorkflowImpl;
+import com.beema.kernel.workflow.submission.SubmissionWorkflowImpl;
+import com.beema.kernel.workflow.renewal.RenewalWorkflowImpl;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -108,7 +111,12 @@ public class TemporalConfig {
         Worker worker = workerFactory.newWorker(POLICY_TASK_QUEUE);
 
         // Register workflow implementations
-        worker.registerWorkflowImplementationTypes(PolicyWorkflowImpl.class);
+        worker.registerWorkflowImplementationTypes(
+                PolicyWorkflowImpl.class,
+                PolicyLifecycleWorkflowImpl.class,
+                SubmissionWorkflowImpl.class,
+                RenewalWorkflowImpl.class
+        );
 
         // Register activity implementations
         worker.registerActivitiesImplementations(activityImpl);

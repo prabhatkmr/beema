@@ -38,6 +38,7 @@ COPY package.json pnpm-workspace.yaml ./
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DOCKER_BUILD=true
 # Ensure Node.js can find packages in workspace root node_modules
 ENV NODE_PATH=/app/node_modules
 

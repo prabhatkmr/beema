@@ -5,16 +5,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone', // Enable standalone output for Docker
 
-  // Set absolute workspace root for Docker builds
+  // Set absolute workspace root for Docker builds only
   // In Docker, workspace root is always /app
-  turbopack: {
-    root: '/app',
-  },
-
-  // Ignore TypeScript errors during build to allow monorepo build to proceed
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  ...(process.env.DOCKER_BUILD === 'true' && {
+    turbopack: {
+      root: '/app',
+    },
+  }),
 };
 
 export default nextConfig;
