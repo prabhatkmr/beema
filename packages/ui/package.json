@@ -8,6 +8,9 @@
     "lint": "eslint . --max-warnings 0",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "expr-eval": "^2.0.2"
+  },
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

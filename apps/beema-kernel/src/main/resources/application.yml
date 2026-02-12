@@ -102,6 +102,26 @@ management:
         http.server.requests: true
     tags:
       application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0  # Sample 100% of traces (adjust for production: 0.1 = 10%)
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+# OpenTelemetry Configuration
+otel:
+  service:
+    name: ${spring.application.name}
+  resource:
+    attributes:
+      service.name: ${spring.application.name}
+      deployment.environment: ${ENVIRONMENT:local}
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}
+  traces:
+    exporter: otlp
 
 logging:
   level:

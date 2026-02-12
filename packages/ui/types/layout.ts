@@ -54,3 +54,53 @@ export interface LayoutSchema {
     context: string;
   };
 }
+
+// --- Dynamic Layout Types (sys_layouts integration) ---
+
+export type DynamicWidgetType =
+  | 'TEXT'
+  | 'TEXTAREA'
+  | 'NUMBER'
+  | 'CURRENCY'
+  | 'DATE'
+  | 'SELECT'
+  | 'CHECKBOX';
+
+export interface DynamicFieldDefinition {
+  id: string;
+  label: string;
+  widget_type: DynamicWidgetType;
+  visible_if?: string;
+  required?: boolean;
+  readonly?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+}
+
+export interface DynamicSectionDefinition {
+  id: string;
+  title: string;
+  visible_if?: string;
+  fields: DynamicFieldDefinition[];
+  layout?: 'grid' | 'stack';
+  columns?: number;
+}
+
+export interface RegionDefinition {
+  id: string;
+  title?: string;
+  visible_if?: string;
+  sections: DynamicSectionDefinition[];
+  layout?: 'grid' | 'stack';
+  columns?: number;
+}
+
+export interface DynamicLayoutSchema {
+  title?: string;
+  regions?: RegionDefinition[];
+  sections?: DynamicSectionDefinition[];
+}

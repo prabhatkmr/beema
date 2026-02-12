@@ -1,0 +1,14 @@
+apiVersion: 1
+
+providers:
+  # Dashboard provider for auto-loading dashboards
+  - name: 'Beema Dashboards'
+    orgId: 1
+    folder: 'Beema'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: true

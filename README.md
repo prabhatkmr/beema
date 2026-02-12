@@ -199,6 +199,9 @@ docker-compose up -d
 - Temporal Server (port 7233) - Workflow engine
 - Temporal UI (port 8088) - Workflow monitoring
 - Zookeeper + Kafka (port 9092) - Message broker
+- **Jaeger (port 16686)** - Distributed tracing backend
+- **Prometheus (port 9090)** - Metrics collection
+- **Grafana (port 3001)** - Observability dashboards
 - beema-kernel (port 8080) - Core API + Temporal worker
 - metadata-service (port 8081) - Schema registry
 - beema-message-processor - Flink streaming job
@@ -209,10 +212,16 @@ docker-compose up -d
 - Beema Kernel API: http://localhost:8080/swagger-ui
 - Temporal UI: http://localhost:8088
 - Keycloak: http://localhost:8090
+- **Grafana (Observability)**: http://localhost:3001 (admin/admin)
+- **Jaeger (Tracing)**: http://localhost:16686
+- **Prometheus (Metrics)**: http://localhost:9090
 
 **Verify all services:**
 ```bash
 ./docker-compose-verify.sh
+
+# Verify observability stack specifically
+./platform/observability/verify-stack.sh
 ```
 
 ## ☸️ Kubernetes Deployment
@@ -372,6 +381,7 @@ cd apps/new-service
 - [Quick Start](QUICK_START.md) - 5-minute getting started
 - [Docker Setup](DOCKER_SETUP.md) - Complete Docker guide
 - [Turborepo Migration](TURBOREPO_MIGRATION.md) - Monorepo architecture
+- **[Observability Guide](platform/observability/README.md)** - OpenTelemetry, Jaeger, Prometheus, Grafana
 
 ### beema-kernel
 - [Temporal Workflow Guide](apps/beema-kernel/TEMPORAL_WORKFLOW_GUIDE.md) - Workflow system
@@ -453,6 +463,32 @@ open http://localhost:8088
 # 4. Debug failed workflows
 ```
 
+### Monitor Application with Observability Stack
+
+```bash
+# 1. Generate sample traces
+for i in {1..10}; do
+  curl http://localhost:8080/actuator/health
+  sleep 1
+done
+
+# 2. View traces in Jaeger
+open http://localhost:16686
+# Search: Service = "beema-kernel"
+
+# 3. Import Spring Boot dashboard in Grafana
+open http://localhost:3001
+# Login: admin/admin
+# Dashboards → Import → ID: 19004
+
+# 4. Query metrics in Prometheus
+open http://localhost:9090
+# Query: rate(http_server_requests_seconds_count[5m])
+
+# 5. Verify observability stack
+./platform/observability/verify-stack.sh
+```
+
 ## 🧪 Testing
 
 ### Unit Tests
@@ -509,6 +545,13 @@ rm -rf .turbo
 - **pnpm** - Package manager
 - **Maven** - Java build tool
 
+### Observability
+- **OpenTelemetry** - Distributed tracing instrumentation
+- **Jaeger** - Trace collection and visualization
+- **Prometheus** - Metrics collection and alerting
+- **Grafana** - Unified observability dashboards
+- **Micrometer** - Application metrics
+
 ### AI & LLMs
 - **OpenRouter** - Unified LLM API
 - Supports: GPT-4, Claude 3, Gemini, Llama 3.1, and more
@@ -543,6 +586,7 @@ ISC
 ✅ AI-powered claim analysis with OpenRouter
 ✅ Flink stream processing
 ✅ Visual form builder (Studio)
+✅ **Observability stack (OpenTelemetry, Jaeger, Prometheus, Grafana)**
 ✅ Docker Compose full stack
 
 ### In Development
