@@ -1,0 +1,23 @@
+{
+  "messageId": "msg-test-003",
+  "messageType": "slip_created",
+  "sourceSystem": "london_market",
+  "payload": {
+    "slipNumber": "SLIP-2026-00123",
+    "umr": "B1234XYZ2026001",
+    "slip": {
+      "leadUnderwriter": "Lloyd's Syndicate 1234",
+      "totalPremium": 500000.00,
+      "totalLine": 100,
+      "currency": "GBP",
+      "inceptionDate": "2026-03-01",
+      "expiryDate": "2027-03-01",
+      "riskCode": "MARINE-HULL",
+      "status": "QUOTED"
+    },
+    "broker": {
+      "name": "ABC Brokers Ltd"
+    }
+  },
+  "timestamp": "2026-02-11T09:15:00Z"
+}

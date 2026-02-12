@@ -1,0 +1,32 @@
+# Beema Message Processor Configuration
+# Environment variables take precedence over these defaults
+
+# Flink Job Configuration
+flink:
+  job:
+    name: ${FLINK_JOB_NAME:beema-message-processor}
+    parallelism: ${FLINK_PARALLELISM:1}
+    checkpoint-interval: ${FLINK_CHECKPOINT_INTERVAL:60000}
+
+# Kafka Configuration
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  group-id: ${KAFKA_GROUP_ID:beema-message-processor}
+  topics:
+    source: ${KAFKA_SOURCE_TOPIC:raw-messages}
+    sink: ${KAFKA_SINK_TOPIC:processed-messages}
+
+# Database Configuration
+database:
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5433}
+  name: ${DB_NAME:beema_kernel}
+  username: ${DB_USERNAME:beema}
+  password: ${DB_PASSWORD:beema}
+
+# Logging Configuration
+logging:
+  level:
+    com.beema: DEBUG
+    org.apache.flink: INFO
+    org.apache.kafka: INFO

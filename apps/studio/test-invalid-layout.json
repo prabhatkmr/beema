@@ -1,0 +1,43 @@
+{
+  "layout_id": "invalid-123",
+  "layout_name": "",
+  "layout_type": "form",
+  "market_context": "RETAIL",
+  "fields": [
+    {
+      "id": "field_1",
+      "type": "text",
+      "name": "Invalid Name With Spaces",
+      "label": "Invalid Field",
+      "required": true
+    },
+    {
+      "id": "field_2",
+      "type": "select",
+      "name": "no_options",
+      "label": "Select Without Options",
+      "required": true,
+      "options": []
+    },
+    {
+      "id": "field_3",
+      "type": "text",
+      "name": "duplicate_name",
+      "label": "First Duplicate",
+      "required": false
+    },
+    {
+      "id": "field_4",
+      "type": "text",
+      "name": "duplicate_name",
+      "label": "Second Duplicate",
+      "required": false
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "created_at": "2026-02-12T10:00:00Z",
+    "updated_at": "2026-02-12T10:00:00Z",
+    "created_by": "test-user"
+  }
+}

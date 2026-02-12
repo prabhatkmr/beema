@@ -18,7 +18,8 @@
       "env": [
         "SPRING_PROFILES_ACTIVE",
         "DATABASE_URL",
-        "TEMPORAL_ENDPOINT"
+        "TEMPORAL_ENDPOINT",
+        "NEXT_PUBLIC_API_URL"
       ]
     },
     "test": {
@@ -55,6 +56,9 @@
     "format": {
       "outputs": [],
       "cache": false
+    },
+    "type-check": {
+      "outputs": []
     },
     "deploy": {
       "dependsOn": [

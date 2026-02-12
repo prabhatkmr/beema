@@ -56,6 +56,21 @@ spring:
           issuer-uri: ${OAUTH2_ISSUER_URI:https://auth.beema.local/realms/beema}
           jwk-set-uri: ${OAUTH2_JWK_SET_URI:https://auth.beema.local/realms/beema/protocol/openid-connect/certs}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        compression.type: snappy
+
+beema:
+  kafka:
+    control-topic: ${KAFKA_CONTROL_TOPIC:message-hooks-control}
+
 management:
   endpoints:
     web:

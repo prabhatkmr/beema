@@ -114,6 +114,22 @@ temporal:
     enabled: ${TEMPORAL_WORKER_ENABLED:true}
     max-concurrent-activities: ${TEMPORAL_MAX_CONCURRENT_ACTIVITIES:10}
     max-concurrent-workflows: ${TEMPORAL_MAX_CONCURRENT_WORKFLOWS:10}
+  task-queues:
+    policy: POLICY_TASK_QUEUE
+  workflow:
+    execution-timeout: PT1H
+  activity:
+    schedule-to-close-timeout: PT5M
+    start-to-close-timeout: PT2M
+
+# Message Processing Configuration
+beema:
+  message-processing:
+    max-hook-execution-time-ms: 5000
+    default-retry-attempts: 3
+    default-retry-backoff-ms: 1000
+    enable-metrics: true
+    enable-tracing: true
 
 ---
 spring:

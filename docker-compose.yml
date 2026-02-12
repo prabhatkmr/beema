@@ -52,7 +52,7 @@ services:
   # Metadata Service
   metadata-service:
     build:
-      context: ./metadata-service
+      context: ./apps/metadata-service
       dockerfile: Dockerfile
     container_name: beema-metadata
     environment:
@@ -67,6 +67,10 @@ services:
       OAUTH2_ISSUER_URI: http://keycloak:8080/realms/beema
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/beema/protocol/openid-connect/certs
 
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONTROL_TOPIC: message-hooks-control
+
       # Spring profiles (uncomment if needed)
       # SPRING_PROFILES_ACTIVE: dev,json-logging
     ports:
@@ -75,6 +79,8 @@ services:
       postgres:
         condition: service_healthy
       keycloak:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
@@ -85,7 +91,49 @@ services:
     networks:
       - beema-network
 
-  # Beema Kernel Service
+  # Temporal Server (using auto-setup image)
+  temporal:
+    image: temporalio/auto-setup:1.25.2
+    container_name: beema-temporal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=beema
+      - POSTGRES_PWD=beema
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    ports:
+      - "7233:7233"  # Temporal gRPC
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "temporal:7233", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - beema-network
+    volumes:
+      - temporal_data:/etc/temporal
+
+  # Temporal Web UI
+  temporal-ui:
+    image: temporalio/ui:2.32.0
+    container_name: beema-temporal-ui
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - "8088:8080"
+    networks:
+      - beema-network
+
+  # Beema Kernel Service (with Temporal Worker)
   beema-kernel:
     build:
       context: ./beema-kernel
@@ -106,6 +154,15 @@ services:
       OAUTH2_ISSUER_URI: http://keycloak:8080/realms/beema
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/beema/protocol/openid-connect/certs
 
+      # Temporal configuration
+      TEMPORAL_HOST: temporal
+      TEMPORAL_PORT: 7233
+      TEMPORAL_NAMESPACE: default
+      TEMPORAL_WORKER_ENABLED: true
+      TEMPORAL_TASK_QUEUE: POLICY_TASK_QUEUE
+      TEMPORAL_MAX_CONCURRENT_ACTIVITIES: 10
+      TEMPORAL_MAX_CONCURRENT_WORKFLOWS: 10
+
       # Spring profiles (uncomment if needed)
       # SPRING_PROFILES_ACTIVE: dev,json-logging
     ports:
@@ -117,6 +174,8 @@ services:
         condition: service_healthy
       metadata-service:
         condition: service_healthy
+      temporal:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
@@ -126,9 +185,297 @@ services:
     networks:
       - beema-network
 
+  # ===========================================================================
+  # Option 1: Kafka + Zookeeper (Default)
+  # ===========================================================================
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: beema-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - beema-network
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: beema-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - beema-network
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka Init - Create topics
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: beema-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # Create raw-messages topic
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic raw-messages \
+        --partitions 3 \
+        --replication-factor 1 \
+        --config retention.ms=604800000
+
+      # Create processed-messages topic
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic processed-messages \
+        --partitions 3 \
+        --replication-factor 1 \
+        --config retention.ms=604800000
+
+      # Create beema-events topic (transformed messages)
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic beema-events \
+        --partitions 6 \
+        --replication-factor 1 \
+        --config retention.ms=2592000000
+
+      # Create message-hooks-control topic (broadcast stream)
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic message-hooks-control \
+        --partitions 1 \
+        --replication-factor 1 \
+        --config retention.ms=-1 \
+        --config cleanup.policy=compact
+
+      echo 'Topics created successfully'
+      "
+    networks:
+      - beema-network
+
+  # ===========================================================================
+  # Option 2: Redpanda (Kafka-Compatible, Zookeeper-Free)
+  # Uncomment to use Redpanda instead of Kafka + Zookeeper
+  # ===========================================================================
+  #
+  # redpanda:
+  #   image: docker.redpanda.com/redpandadata/redpanda:v24.3.1
+  #   container_name: beema-redpanda
+  #   command:
+  #     - redpanda
+  #     - start
+  #     - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+  #     - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+  #     - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+  #     - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+  #     - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+  #     - --rpc-addr redpanda:33145
+  #     - --advertise-rpc-addr redpanda:33145
+  #     - --mode dev-container
+  #     - --smp 2
+  #     - --memory 2G
+  #   ports:
+  #     - "19092:19092"  # Kafka API (external)
+  #     - "18081:18081"  # Schema Registry (external)
+  #     - "18082:18082"  # HTTP Proxy (external)
+  #     - "9644:9644"    # Admin API
+  #   volumes:
+  #     - redpanda_data:/var/lib/redpanda/data
+  #   networks:
+  #     - beema-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "rpk cluster health"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #
+  # redpanda-console:
+  #   image: docker.redpanda.com/redpandadata/console:v2.8.0
+  #   container_name: beema-redpanda-console
+  #   depends_on:
+  #     - redpanda
+  #   environment:
+  #     KAFKA_BROKERS: redpanda:9092
+  #     KAFKA_SCHEMAREGISTRY_ENABLED: true
+  #     KAFKA_SCHEMAREGISTRY_URLS: http://redpanda:8081
+  #   ports:
+  #     - "8089:8080"
+  #   networks:
+  #     - beema-network
+
+  # ===========================================================================
+  # Apache Flink Cluster
+  # ===========================================================================
+
+  # Flink JobManager (Master)
+  flink-jobmanager:
+    image: flink:1.18.1-java21
+    container_name: beema-flink-jobmanager
+    ports:
+      - "8081:8081"  # Flink Web UI Dashboard
+      - "6123:6123"  # JobManager RPC
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        jobmanager.rpc.port: 6123
+        jobmanager.bind-host: 0.0.0.0
+        jobmanager.memory.process.size: 1600m
+        taskmanager.numberOfTaskSlots: 4
+        parallelism.default: 2
+        state.backend: rocksdb
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        execution.checkpointing.interval: 60000
+        execution.checkpointing.mode: EXACTLY_ONCE
+    command: jobmanager
+    volumes:
+      - flink_checkpoints:/tmp/flink-checkpoints
+      - flink_savepoints:/tmp/flink-savepoints
+    networks:
+      - beema-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/overview || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Flink TaskManager (Worker)
+  flink-taskmanager:
+    image: flink:1.18.1-java21
+    container_name: beema-flink-taskmanager
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        jobmanager.rpc.port: 6123
+        taskmanager.numberOfTaskSlots: 4
+        taskmanager.memory.process.size: 2048m
+        taskmanager.memory.managed.fraction: 0.4
+        parallelism.default: 2
+    command: taskmanager
+    networks:
+      - beema-network
+    volumes:
+      - flink_checkpoints:/tmp/flink-checkpoints
+      - flink_savepoints:/tmp/flink-savepoints
+    scale: 2  # Run 2 TaskManagers for parallel processing
+
+  # Beema Message Processor (Flink Job Submission)
+  beema-message-processor:
+    build:
+      context: ./apps/beema-message-processor
+      dockerfile: Dockerfile
+    container_name: beema-message-processor-job
+    environment:
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_GROUP_ID: beema-message-processor
+      KAFKA_SOURCE_TOPIC: raw-messages
+      KAFKA_SINK_TOPIC: beema-events
+      KAFKA_CONTROL_TOPIC: message-hooks-control
+
+      # Database configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: beema_kernel
+      DB_USERNAME: beema
+      DB_PASSWORD: beema
+
+      # Flink configuration
+      FLINK_JOBMANAGER_HOST: flink-jobmanager
+      FLINK_JOBMANAGER_PORT: 6123
+      FLINK_JOB_NAME: beema-message-processor
+      FLINK_PARALLELISM: 4
+      FLINK_CHECKPOINT_INTERVAL: 60000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+    networks:
+      - beema-network
+    command: >
+      sh -c "
+      echo 'Waiting for Flink JobManager to be ready...';
+      sleep 10;
+      echo 'Submitting Flink job to JobManager...';
+      /opt/flink/bin/flink run
+        --jobmanager flink-jobmanager:8081
+        --detached
+        /opt/flink/usrlib/beema-message-processor.jar
+      "
+
+  # Beema Studio - Visual Message Blueprint Editor
+  studio:
+    build:
+      context: ./apps/studio
+      dockerfile: Dockerfile
+    container_name: beema-studio
+    environment:
+      VITE_API_BASE_URL: http://beema-kernel:8080/api/v1
+    ports:
+      - "3000:80"
+    depends_on:
+      beema-kernel:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - beema-network
+
 volumes:
   postgres_data:
     driver: local
+  temporal_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  zookeeper_logs:
+    driver: local
+  kafka_data:
+    driver: local
+  flink_checkpoints:
+    driver: local
+  flink_savepoints:
+    driver: local
+  # redpanda_data:  # Uncomment if using Redpanda
+  #   driver: local
 
 networks:
   beema-network:

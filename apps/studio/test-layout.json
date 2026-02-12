@@ -1,0 +1,75 @@
+{
+  "layout_id": "123e4567-e89b-12d3-a456-426614174000",
+  "layout_name": "Policy Application Form",
+  "layout_type": "form",
+  "market_context": "RETAIL",
+  "fields": [
+    {
+      "id": "field_1",
+      "type": "text",
+      "name": "policy_number",
+      "label": "Policy Number",
+      "required": true,
+      "placeholder": "Enter policy number",
+      "width": "half"
+    },
+    {
+      "id": "field_2",
+      "type": "date",
+      "name": "effective_date",
+      "label": "Effective Date",
+      "required": true,
+      "width": "half"
+    },
+    {
+      "id": "field_3",
+      "type": "select",
+      "name": "policy_type",
+      "label": "Policy Type",
+      "required": true,
+      "options": [
+        { "label": "Auto", "value": "auto" },
+        { "label": "Home", "value": "home" },
+        { "label": "Life", "value": "life" }
+      ],
+      "width": "full"
+    },
+    {
+      "id": "field_4",
+      "type": "number",
+      "name": "coverage_amount",
+      "label": "Coverage Amount",
+      "required": true,
+      "placeholder": "Enter coverage amount",
+      "width": "half"
+    },
+    {
+      "id": "field_5",
+      "type": "email",
+      "name": "contact_email",
+      "label": "Contact Email",
+      "required": true,
+      "placeholder": "email@example.com",
+      "width": "half"
+    },
+    {
+      "id": "field_6",
+      "type": "textarea",
+      "name": "notes",
+      "label": "Additional Notes",
+      "required": false,
+      "placeholder": "Enter any additional notes",
+      "width": "full"
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "created_at": "2026-02-12T10:00:00Z",
+    "updated_at": "2026-02-12T10:00:00Z",
+    "created_by": "studio-user"
+  },
+  "grid_config": {
+    "columns": 12,
+    "gap": 16
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "messageId": "msg-test-002",
+  "messageType": "claim_submitted",
+  "sourceSystem": "partner_api",
+  "payload": {
+    "claimId": "CLM-98765",
+    "policyNumber": "POL-12345",
+    "claim": {
+      "amount": 5000.00,
+      "submittedDate": "2026-02-10",
+      "incidentDate": "2026-02-05",
+      "type": "property_damage",
+      "description": "Water damage in kitchen"
+    },
+    "claimant": {
+      "name": "John Doe"
+    }
+  },
+  "timestamp": "2026-02-10T14:22:00Z"
+}

@@ -1,0 +1,22 @@
+{
+  "messageId": "msg-test-001",
+  "messageType": "policy_created",
+  "sourceSystem": "legacy_system",
+  "payload": {
+    "policyRef": "pol-12345",
+    "customer": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com"
+    },
+    "policy": {
+      "premium": 1000.00,
+      "currency": "GBP",
+      "effectiveDate": "2026-01-01",
+      "expiryDate": "2027-01-01",
+      "productCode": "HOME-001",
+      "status": "ACTIVE"
+    }
+  },
+  "timestamp": "2026-02-12T10:30:00Z"
+}

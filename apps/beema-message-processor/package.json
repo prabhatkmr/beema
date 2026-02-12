@@ -1,0 +1,15 @@
+{
+  "name": "@beema/message-processor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "mvn clean package -DskipTests",
+    "test": "mvn test",
+    "lint": "mvn checkstyle:check",
+    "dev": "mvn exec:java -Dexec.mainClass=com.beema.processor.MessageProcessorJob",
+    "migrate": "mvn flyway:migrate",
+    "docker:build": "docker build -t beema-message-processor:latest .",
+    "docker:run": "docker run --network beema-network beema-message-processor:latest"
+  },
+  "description": "Flink streaming job for transforming external messages to Beema's internal format"
+}
