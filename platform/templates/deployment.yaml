@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "beema.fullname" . }}
+spec:
+  replicas: {{ .Values.beemaKernel.replicaCount | default .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: beema
+  template:
+    metadata:
+      labels:
+        app: beema
+    spec:
+      {{- if .Values.beemaKernel.initContainers }}
+      initContainers:
+        - name: flyway-migrate
+          image: "{{ .Values.beemaKernel.initContainers.flyway.image.registry }}/{{ .Values.beemaKernel.initContainers.flyway.image.repository }}:{{ .Values.beemaKernel.initContainers.flyway.image.tag }}"
+          command: {{ toJson .Values.beemaKernel.initContainers.flyway.command }}
+          env:
+            {{- range $key, $value := .Values.beemaKernel.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $envVar, $secretKey := .Values.beemaKernel.secrets.dbCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.beemaKernel.secrets.dbCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.beemaKernel.initContainers.flyway.resources | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: beema-kernel
+          image: "{{ .Values.beemaKernel.image.registry }}/{{ .Values.beemaKernel.image.repository }}:{{ .Values.beemaKernel.image.tag }}"
+          imagePullPolicy: {{ .Values.beemaKernel.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.beemaKernel.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: DATA_PLATFORM_PROVIDER
+              value: {{ .Values.dataPlatform.provider | quote }}
+            {{- range $envVar, $secretKey := .Values.beemaKernel.secrets.dbCredentials.keys }}
+            - name: {{ $envVar }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.beemaKernel.secrets.dbCredentials.secretName }}
+                  key: {{ $secretKey }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.beemaKernel.probes.liveness | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.beemaKernel.probes.readiness | nindent 12 }}
+          resources:
+            {{- toYaml .Values.beemaKernel.resources | nindent 12 }}

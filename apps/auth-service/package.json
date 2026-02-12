@@ -1,0 +1,22 @@
+{
+  "name": "@beema/auth-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Beema Authentication & Authorization Service - OAuth2/JWT",
+  "scripts": {
+    "build": "echo 'Auth service build - to be implemented'",
+    "test": "echo 'Auth service tests - to be implemented'",
+    "lint": "echo 'Auth service lint - to be implemented'",
+    "dev": "echo 'Auth service dev - to be implemented'",
+    "clean": "rm -rf target",
+    "format": "echo 'Auth service format - to be implemented'"
+  },
+  "keywords": [
+    "authentication",
+    "oauth2",
+    "jwt"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

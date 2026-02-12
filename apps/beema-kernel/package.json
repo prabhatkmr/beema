@@ -1,0 +1,25 @@
+{
+  "name": "@beema/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Beema Unified Agreement Kernel - Bitemporal, Metadata-Driven Insurance Platform",
+  "scripts": {
+    "build": "mvn clean package -DskipTests",
+    "test": "mvn test",
+    "lint": "mvn checkstyle:check",
+    "dev": "mvn spring-boot:run -Dspring-boot.run.profiles=dev",
+    "clean": "mvn clean",
+    "format": "mvn spotless:apply"
+  },
+  "keywords": [
+    "insurance",
+    "bitemporal",
+    "spring-boot",
+    "temporal-workflow"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "maven": ">=3.8.0",
+    "java": ">=21.0.0"
+  }
+}

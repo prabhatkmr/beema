@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: beema-postgres
+    environment:
+      POSTGRES_DB: beema_kernel
+      POSTGRES_USER: beema
+      POSTGRES_PASSWORD: beema
+      POSTGRES_INITDB_ARGS: "-A md5"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beema"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - beema-network
+
+  # Temporal Server (using auto-setup image)
+  temporal:
+    image: temporalio/auto-setup:1.25.2
+    container_name: beema-temporal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=beema
+      - POSTGRES_PWD=beema
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    ports:
+      - "7233:7233"
+    volumes:
+      - ./temporal-config:/etc/temporal/config/dynamicconfig
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "temporal:7233", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - beema-network
+
+  # Temporal Web UI
+  temporal-ui:
+    image: temporalio/ui:2.32.0
+    container_name: beema-temporal-ui
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - "8088:8080"
+    networks:
+      - beema-network
+
+  # Beema Kernel Application (with Temporal Worker)
+  beema-kernel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beema-kernel
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=beema_kernel
+      - DB_USERNAME=beema
+      - DB_PASSWORD=beema
+      - TEMPORAL_HOST=temporal
+      - TEMPORAL_PORT=7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_WORKER_ENABLED=true
+      - TEMPORAL_MAX_CONCURRENT_ACTIVITIES=10
+      - TEMPORAL_MAX_CONCURRENT_WORKFLOWS=10
+      - OAUTH2_ISSUER_URI=https://auth.beema.local/realms/beema
+      - OAUTH2_JWK_SET_URI=https://auth.beema.local/realms/beema/protocol/openid-connect/certs
+    ports:
+      - "8080:8080"
+    networks:
+      - beema-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  beema-network:
+    driver: bridge

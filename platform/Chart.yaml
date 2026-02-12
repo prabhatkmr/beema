@@ -1,0 +1,6 @@
+apiVersion: v2
+name: beema
+description: A Helm chart for Beema application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

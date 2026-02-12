@@ -1,0 +1,49 @@
+# Turborepo
+.turbo
+*.log
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+target/
+*.jar
+*.war
+*.ear
+
+# Testing
+coverage/
+*.tsbuildinfo
+junit.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporal
+.temporal/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# OS
+Thumbs.db

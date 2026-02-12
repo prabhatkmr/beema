@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>tenantId</includeMdcKeyName>
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <timeZone>UTC</timeZone>
+        </encoder>
+    </appender>
+
+    <logger name="com.beema" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+    </root>
+</configuration>

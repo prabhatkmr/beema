@@ -1,0 +1,25 @@
+{{- if .Values.temporal.enabled }}
+{{- if .Values.temporal.worker.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Chart.Name }}-temporal-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}-temporal-worker
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    component: temporal-worker
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-temporal-worker
+      release: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+{{- end }}
+{{- end }}

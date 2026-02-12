@@ -1,0 +1,135 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: beema-postgres
+    environment:
+      POSTGRES_DB: beema_kernel
+      POSTGRES_USER: beema
+      POSTGRES_PASSWORD: beema
+    ports:
+      - "5433:5432"  # Using 5433 to avoid conflict with host PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beema -d beema_kernel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - beema-network
+
+  # Keycloak for OAuth2/OIDC (using PostgreSQL)
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: beema-keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: beema
+      KC_DB_PASSWORD: beema
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && timeout 2 cat <&3 | head -1 | grep -q '200'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - beema-network
+
+  # Metadata Service
+  metadata-service:
+    build:
+      context: ./metadata-service
+      dockerfile: Dockerfile
+    container_name: beema-metadata
+    environment:
+      # Database configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: beema_metadata
+      DB_USERNAME: beema
+      DB_PASSWORD: beema
+
+      # OAuth2 configuration
+      OAUTH2_ISSUER_URI: http://keycloak:8080/realms/beema
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/beema/protocol/openid-connect/certs
+
+      # Spring profiles (uncomment if needed)
+      # SPRING_PROFILES_ACTIVE: dev,json-logging
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - beema-network
+
+  # Beema Kernel Service
+  beema-kernel:
+    build:
+      context: ./beema-kernel
+      dockerfile: Dockerfile
+    container_name: beema-kernel
+    environment:
+      # Database configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: beema_kernel
+      DB_USERNAME: beema
+      DB_PASSWORD: beema
+
+      # Metadata Service URL
+      METADATA_SERVICE_URL: http://metadata-service:8082
+
+      # OAuth2 configuration (adjust realm name as needed)
+      OAUTH2_ISSUER_URI: http://keycloak:8080/realms/beema
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/beema/protocol/openid-connect/certs
+
+      # Spring profiles (uncomment if needed)
+      # SPRING_PROFILES_ACTIVE: dev,json-logging
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      metadata-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - beema-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  beema-network:
+    driver: bridge

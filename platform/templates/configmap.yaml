@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "beema.fullname" . }}
+  labels:
+    app: {{ include "beema.name" . }}
+    chart: {{ include "beema.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  # Add your configuration key-value pairs here
+  # example.property: value

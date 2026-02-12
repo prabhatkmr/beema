@@ -1,0 +1,164 @@
+{{- if .Values.temporal.enabled }}
+{{- if .Values.temporal.worker.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-temporal-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}-temporal-worker
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    component: temporal-worker
+    market-context: "UNIFIED"
+spec:
+  replicas: {{ .Values.temporal.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-temporal-worker
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-temporal-worker
+        release: {{ .Release.Name }}
+        component: temporal-worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      serviceAccountName: {{ .Chart.Name }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: temporal-worker
+          image: "{{ .Values.temporal.worker.image.registry }}/{{ .Values.temporal.worker.image.repository }}:{{ .Values.temporal.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.temporal.worker.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: management
+              containerPort: 8081
+              protocol: TCP
+
+          env:
+            # Spring Configuration
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.temporal.worker.env.SPRING_PROFILES_ACTIVE | quote }}
+
+            # Database Configuration
+            - name: DB_HOST
+              value: {{ .Values.temporal.worker.env.DB_HOST | quote }}
+            - name: DB_PORT
+              value: {{ .Values.temporal.worker.env.DB_PORT | quote }}
+            - name: DB_NAME
+              value: {{ .Values.temporal.worker.env.DB_NAME | quote }}
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.temporal.worker.secrets.dbCredentials.secretName }}
+                  key: {{ .Values.temporal.worker.secrets.dbCredentials.keys.DB_USERNAME }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.temporal.worker.secrets.dbCredentials.secretName }}
+                  key: {{ .Values.temporal.worker.secrets.dbCredentials.keys.DB_PASSWORD }}
+
+            # Temporal Configuration
+            - name: TEMPORAL_HOST
+              value: {{ .Values.temporal.server.host | quote }}
+            - name: TEMPORAL_PORT
+              value: {{ .Values.temporal.server.port | quote }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.temporal.server.namespace | quote }}
+            - name: TEMPORAL_WORKER_ENABLED
+              value: {{ .Values.temporal.worker.env.TEMPORAL_WORKER_ENABLED | quote }}
+            - name: TEMPORAL_MAX_CONCURRENT_ACTIVITIES
+              value: {{ .Values.temporal.worker.config.maxConcurrentActivities | quote }}
+            - name: TEMPORAL_MAX_CONCURRENT_WORKFLOWS
+              value: {{ .Values.temporal.worker.config.maxConcurrentWorkflows | quote }}
+
+            # JVM Configuration
+            - name: JAVA_OPTS
+              value: >-
+                -Xms{{ .Values.temporal.worker.resources.requests.memory }}
+                -Xmx{{ .Values.temporal.worker.resources.limits.memory }}
+                -XX:+UseG1GC
+                -XX:MaxGCPauseMillis=200
+                -XX:+ExitOnOutOfMemoryError
+                -Djava.security.egd=file:/dev/./urandom
+
+          resources:
+            requests:
+              cpu: {{ .Values.temporal.worker.resources.requests.cpu }}
+              memory: {{ .Values.temporal.worker.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.temporal.worker.resources.limits.cpu }}
+              memory: {{ .Values.temporal.worker.resources.limits.memory }}
+
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.temporal.worker.probes.liveness.httpGet.path }}
+              port: {{ .Values.temporal.worker.probes.liveness.httpGet.port }}
+            initialDelaySeconds: {{ .Values.temporal.worker.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.temporal.worker.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.temporal.worker.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.temporal.worker.probes.liveness.failureThreshold }}
+
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.temporal.worker.probes.readiness.httpGet.path }}
+              port: {{ .Values.temporal.worker.probes.readiness.httpGet.port }}
+            initialDelaySeconds: {{ .Values.temporal.worker.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.temporal.worker.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.temporal.worker.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.temporal.worker.probes.readiness.failureThreshold }}
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /app/logs
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+
+      affinity:
+        # Prefer to schedule workers on different nodes for fault tolerance
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Chart.Name }}-temporal-worker
+                topologyKey: kubernetes.io/hostname
+
+      terminationGracePeriodSeconds: 60
+
+      # DNS Configuration for service discovery
+      dnsPolicy: ClusterFirst
+{{- end }}
+{{- end }}

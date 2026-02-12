@@ -1,0 +1,42 @@
+{
+  "name": "beema",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Beema Insurance Platform - Turborepo Monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean",
+    "format": "turbo run format"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prabhatkmr/beema.git"
+  },
+  "keywords": [
+    "insurance",
+    "monorepo",
+    "turborepo",
+    "microservices"
+  ],
+  "author": "Beema Team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prabhatkmr/beema/issues"
+  },
+  "homepage": "https://github.com/prabhatkmr/beema#readme"
+}

@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16:///beema_kernel_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+  flyway:
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.test.local/realms/beema
+
+logging:
+  level:
+    root: WARN
+    com.beema: DEBUG
