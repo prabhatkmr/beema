@@ -397,7 +397,7 @@ export default function PolicyCenterPage() {
 
   return (
     <AppShell
-      title="Policy Center"
+      title="Dashboard"
       searchPlaceholder="Search policies..."
       onBack={() => router.back()}
       onSearchChange={setSearchQuery}
