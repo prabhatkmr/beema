@@ -1,7 +1,0 @@
-module.exports = [
-"[project]/apps/portal/locales/es-ES.json (json)", ((__turbopack_context__) => {
-
-__turbopack_context__.v({"dashboard":{"greeting":"Buenos Días, {name}","welcome":"Bienvenido a tu espacio de trabajo Beema","title":"Panel de Control"},"apps":{"policy":{"title":"Pólizas Beema","description":"Gestionar pólizas de seguros","pending":"{count} pendientes"},"claim":{"title":"Reclamaciones Beema","description":"Enviar y rastrear reclamaciones","pending":"{count} pendientes"},"billing":{"title":"Facturación Beema","description":"Facturas y pagos","pending":"{count} pendientes"},"studio":{"title":"Estudio Beema","description":"Configuración de productos","pending":"{count} pendientes"},"agents":{"title":"Agentes Beema","description":"Gestión de agentes","pending":"{count} pendientes"},"analytics":{"title":"Analíticas Beema","description":"Informes y estadísticas","pending":"{count} pendientes"},"profile":{"title":"Perfil","description":"Gestionar tu perfil","pending":"{count} pendientes"},"settings":{"title":"Configuración","description":"Ajustes del sistema","pending":"{count} pendientes"}},"common":{"loading":"Cargando...","error":"Ha ocurrido un error","save":"Guardar","cancel":"Cancelar","delete":"Eliminar","edit":"Editar","create":"Crear","search":"Buscar","filter":"Filtrar","export":"Exportar","import":"Importar"}});}),
-];
-
-//# sourceMappingURL=apps_portal_locales_es-ES_json_b7c003c0._.js.map

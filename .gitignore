@@ -15,6 +15,10 @@ target/
 *.war
 *.ear
 
+# Next.js
+.next/
+out/
+
 # Testing
 coverage/
 *.tsbuildinfo
