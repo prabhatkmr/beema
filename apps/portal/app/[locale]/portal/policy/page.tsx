@@ -12,11 +12,18 @@ import {
   Landmark,
   ChevronDown,
   X,
+  Plus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { FeedCard } from "@/components/layout/FeedCard";
+import { Button } from "@/components/ui/button";
+import { PolicyDetail } from "@/components/policy/PolicyDetail";
+import { LayoutRenderer } from "@/components/dynamic/LayoutRenderer";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Layout } from "@/types/layout";
 import { cn } from "@/lib/utils";
+import { saveQuoteInProgress, removeQuoteInProgress, type QuoteInProgress } from "@/components/QuotesInProgress";
 
 interface Policy {
   id: string;
@@ -121,6 +128,44 @@ const mockPolicies: Policy[] = [
   },
 ];
 
+const newQuoteLayout: Layout = {
+  regions: [
+    {
+      id: "quote-info",
+      label: "Quote Information",
+      columns: 2,
+      fields: [
+        { id: "product", label: "Product", type: "SELECT", required: true, options: ["Commercial Property", "Professional Indemnity", "Cyber Liability", "Directors & Officers", "Marine Cargo", "Employers Liability"], placeholder: "Select product..." },
+        { id: "lineOfBusiness", label: "Line of Business", type: "SELECT", required: true, options: ["Retail", "Commercial", "London Market"], placeholder: "Select line..." },
+        { id: "effectiveDate", label: "Effective Date", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
+        { id: "expiryDate", label: "Expiry Date", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
+      ],
+    },
+    {
+      id: "insured-details",
+      label: "Insured Details",
+      columns: 2,
+      fields: [
+        { id: "insuredName", label: "Insured Name", type: "TEXT", required: true, placeholder: "Enter insured name" },
+        { id: "insuredEmail", label: "Email", type: "TEXT", required: false, placeholder: "email@example.com" },
+        { id: "insuredAddress", label: "Address", type: "TEXT", required: false, placeholder: "Enter address" },
+        { id: "territory", label: "Territory", type: "SELECT", required: true, options: ["United Kingdom", "United States", "European Union", "Asia Pacific"], placeholder: "Select territory..." },
+      ],
+    },
+    {
+      id: "coverage",
+      label: "Coverage",
+      columns: 2,
+      fields: [
+        { id: "sumInsured", label: "Sum Insured", type: "CURRENCY", required: true, placeholder: "0.00" },
+        { id: "premium", label: "Estimated Premium", type: "CURRENCY", required: false, placeholder: "0.00" },
+        { id: "deductible", label: "Deductible", type: "CURRENCY", required: false, placeholder: "0.00" },
+        { id: "retroactiveDate", label: "Retroactive Cover", type: "TOGGLE", required: false, defaultValue: false },
+      ],
+    },
+  ],
+};
+
 // Multi-select dropdown component
 function MultiSelectDropdown({
   label,
@@ -220,11 +265,55 @@ function MultiSelectDropdown({
 
 export default function PolicyCenterPage() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [lineOfBusinessFilter, setLineOfBusinessFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [isCreatingQuote, setIsCreatingQuote] = useState(false);
+  const [quoteCount, setQuoteCount] = useState<1 | 2>(1);
+  const [currentQuoteId, setCurrentQuoteId] = useState<string | null>(null);
+  const [quote1FormData, setQuote1FormData] = useState<Record<string, any>>({});
+  const [quote2FormData, setQuote2FormData] = useState<Record<string, any>>({});
+
+  // Check for resumed quote on mount
+  useEffect(() => {
+    const resumeQuoteData = sessionStorage.getItem('resumeQuote');
+    if (resumeQuoteData) {
+      try {
+        const quote: QuoteInProgress = JSON.parse(resumeQuoteData);
+        setCurrentQuoteId(quote.id);
+        setQuote1FormData(quote.data);
+        setIsCreatingQuote(true);
+        sessionStorage.removeItem('resumeQuote');
+      } catch (error) {
+        console.error('Failed to resume quote:', error);
+      }
+    }
+  }, []);
+
+  // Auto-save quote as user works on it
+  useEffect(() => {
+    if (isCreatingQuote && currentQuoteId && Object.keys(quote1FormData).length > 0) {
+      const saveTimer = setTimeout(() => {
+        const title = quote1FormData.insuredName
+          ? `Quote for ${quote1FormData.insuredName}`
+          : quote1FormData.product
+          ? `${quote1FormData.product} Quote`
+          : 'Untitled Quote';
+
+        saveQuoteInProgress({
+          id: currentQuoteId,
+          title,
+          product: quote1FormData.product,
+          insuredName: quote1FormData.insuredName,
+          data: quote1FormData,
+        });
+      }, 1000); // Debounce saves by 1 second
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [isCreatingQuote, currentQuoteId, quote1FormData]);
 
   // Get unique values for filters
   const uniqueStatuses = Array.from(new Set(mockPolicies.map(p => p.status)));
@@ -261,18 +350,66 @@ export default function PolicyCenterPage() {
     }
   });
 
-  const selectedPolicy = mockPolicies.find((p) => p.id === selectedId);
+  const handleNewQuote = () => {
+    setSelectedPolicy(null);
+    setIsCreatingQuote(true);
+    setQuoteCount(1);
+    setCurrentQuoteId(`quote-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    setQuote1FormData({});
+    setQuote2FormData({});
+  };
+
+  const handleCancelQuote = () => {
+    // Optionally keep the quote in progress
+    setIsCreatingQuote(false);
+    setCurrentQuoteId(null);
+    setQuote1FormData({});
+    setQuote2FormData({});
+  };
+
+  const handleSubmitQuote = () => {
+    if (quoteCount === 1) {
+      console.log("Submitting quote 1:", quote1FormData);
+    } else {
+      console.log("Submitting quote 1:", quote1FormData);
+      console.log("Submitting quote 2:", quote2FormData);
+    }
+
+    // Remove from quotes in progress after successful submission
+    if (currentQuoteId) {
+      removeQuoteInProgress(currentQuoteId);
+    }
+
+    // TODO: Implement actual quote submission
+    setIsCreatingQuote(false);
+    setCurrentQuoteId(null);
+    setQuote1FormData({});
+    setQuote2FormData({});
+  };
+
+  const handleQuote1FormChange = (fieldId: string, value: any) => {
+    setQuote1FormData((prev) => ({ ...prev, [fieldId]: value }));
+  };
+
+  const handleQuote2FormChange = (fieldId: string, value: any) => {
+    setQuote2FormData((prev) => ({ ...prev, [fieldId]: value }));
+  };
 
   return (
     <AppShell
       title="Policy Center"
-      actionLabel="+ New Quote"
       searchPlaceholder="Search policies..."
-      onAction={() => {
-        /* placeholder for new quote action */
-      }}
       onBack={() => router.back()}
       onSearchChange={setSearchQuery}
+      actionSlot={
+        <Button
+          onClick={handleNewQuote}
+          className="shrink-0 rounded-full gap-1.5"
+        >
+          <Plus className="h-4 w-4" />
+          + New Quote
+        </Button>
+      }
     >
       <div className="flex flex-col h-full">
         {/* Filter Bar */}
@@ -331,81 +468,130 @@ export default function PolicyCenterPage() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid flex-1 grid-cols-12 overflow-hidden">
-          {/* Left Sidebar - Policy List */}
-          <aside className="col-span-4 overflow-y-auto border-r">
-          {filteredPolicies.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              No policies found
-            </div>
-          ) : (
-            filteredPolicies.map((policy) => (
-              <FeedCard
-                key={policy.id}
-                icon={policy.icon}
-                title={policy.title}
-                subtitle={policy.subtitle}
-                metadata={`${policy.id} · ${policy.metadata}`}
-                status={policy.status}
-                statusColor={policy.statusColor}
-                active={selectedId === policy.id}
-                onClick={() => setSelectedId(policy.id)}
-              />
-            ))
+        <div className={cn(
+          "flex-1 overflow-hidden",
+          isCreatingQuote ? "flex" : "grid grid-cols-12"
+        )}>
+          {/* Left Sidebar - Policy List (hidden when creating quotes) */}
+          {!isCreatingQuote && (
+            <aside className="col-span-4 overflow-y-auto border-r">
+              {filteredPolicies.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                  No policies found
+                </div>
+              ) : (
+                filteredPolicies.map((policy) => (
+                  <FeedCard
+                    key={policy.id}
+                    icon={policy.icon}
+                    title={policy.title}
+                    subtitle={policy.subtitle}
+                    metadata={`${policy.id} · ${policy.metadata}`}
+                    status={policy.status}
+                    statusColor={policy.statusColor}
+                    active={selectedPolicy?.id === policy.id}
+                    onClick={() => {
+                      setSelectedPolicy(policy);
+                    }}
+                  />
+                ))
+              )}
+            </aside>
           )}
-        </aside>
 
-        {/* Right Detail Panel */}
-        <section className="col-span-8 overflow-y-auto">
-          {selectedPolicy ? (
-            <div className="p-6 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <selectedPolicy.icon className="h-6 w-6 text-muted-foreground" />
-                </div>
+        {/* Right Detail Panel / Full Width Quote Panel */}
+        <section className={cn(
+          "overflow-hidden flex flex-col",
+          isCreatingQuote ? "flex-1" : "col-span-8"
+        )}>
+          {isCreatingQuote ? (
+            <>
+              <div className="border-b px-6 py-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold">{selectedPolicy.title}</h2>
+                  <h2 className="text-lg font-bold">New Quote{quoteCount === 2 ? ' Comparison' : ''}</h2>
                   <p className="text-sm text-muted-foreground">
-                    {selectedPolicy.id} · {selectedPolicy.subtitle}
+                    {quoteCount === 2 ? 'Create and compare two quote scenarios' : 'Create a new policy quote'}
                   </p>
                 </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 border rounded-md p-1">
+                    <Button
+                      variant={quoteCount === 1 ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setQuoteCount(1)}
+                      className="h-7 px-3 text-xs"
+                    >
+                      Single Quote
+                    </Button>
+                    <Button
+                      variant={quoteCount === 2 ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setQuoteCount(2)}
+                      className="h-7 px-3 text-xs"
+                    >
+                      Compare (2)
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelQuote}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
               </div>
+              <div className="flex-1 overflow-hidden">
+                <div className={cn(
+                  "h-full",
+                  quoteCount === 2 ? "grid grid-cols-2" : ""
+                )}>
+                  {/* Quote 1 */}
+                  <div className="flex flex-col h-full border-r">
+                    {quoteCount === 2 && (
+                      <div className="border-b px-4 py-2 bg-muted/30">
+                        <h3 className="text-sm font-semibold">Quote Option A</h3>
+                      </div>
+                    )}
+                    <ScrollArea className="flex-1 px-6">
+                      <div className="py-4">
+                        <LayoutRenderer
+                          layout={newQuoteLayout}
+                          data={quote1FormData}
+                          onChange={handleQuote1FormChange}
+                        />
+                      </div>
+                    </ScrollArea>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Status
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {selectedPolicy.status}
-                  </p>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Line of Business
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {selectedPolicy.subtitle}
-                  </p>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Reference
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {selectedPolicy.id}
-                  </p>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Key Date
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {selectedPolicy.metadata}
-                  </p>
+                  {/* Quote 2 (only shown when comparing) */}
+                  {quoteCount === 2 && (
+                    <div className="flex flex-col h-full">
+                      <div className="border-b px-4 py-2 bg-muted/30">
+                        <h3 className="text-sm font-semibold">Quote Option B</h3>
+                      </div>
+                      <ScrollArea className="flex-1 px-6">
+                        <div className="py-4">
+                          <LayoutRenderer
+                            layout={newQuoteLayout}
+                            data={quote2FormData}
+                            onChange={handleQuote2FormChange}
+                          />
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+              <div className="border-t px-6 py-4">
+                <Button onClick={handleSubmitQuote} className="w-full">
+                  Submit {quoteCount === 2 ? 'Both Quotes' : 'Quote'}
+                </Button>
+              </div>
+            </>
+          ) : selectedPolicy ? (
+            <PolicyDetail policy={selectedPolicy} />
           ) : (
             <div className="flex h-full items-center justify-center bg-muted/30">
               <div className="text-center">

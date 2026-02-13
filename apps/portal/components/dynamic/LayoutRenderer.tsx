@@ -18,6 +18,7 @@ export interface LayoutRendererProps {
   layout: Layout;
   data: Record<string, any>;
   onChange: (fieldId: string, value: any) => void;
+  readOnly?: boolean;
 }
 
 function gridColsClass(columns: number): string {
@@ -34,10 +35,12 @@ function FieldRenderer({
   field,
   value,
   onChange,
+  readOnly,
 }: {
   field: Field;
   value: any;
   onChange: (fieldId: string, value: any) => void;
+  readOnly?: boolean;
 }) {
   switch (field.type) {
     case "TEXT":
@@ -53,6 +56,7 @@ function FieldRenderer({
             value={value ?? field.defaultValue ?? ""}
             onChange={(e) => onChange(field.id, e.target.value)}
             required={field.required}
+            disabled={readOnly}
           />
         </div>
       );
@@ -78,6 +82,7 @@ function FieldRenderer({
               required={field.required}
               min={0}
               step="0.01"
+              disabled={readOnly}
             />
           </div>
         </div>
@@ -93,6 +98,7 @@ function FieldRenderer({
           <Select
             value={value ?? field.defaultValue ?? ""}
             onValueChange={(v) => onChange(field.id, v)}
+            disabled={readOnly}
           >
             <SelectTrigger id={field.id}>
               <SelectValue placeholder={field.placeholder ?? "Select..."} />
@@ -115,6 +121,7 @@ function FieldRenderer({
             id={field.id}
             checked={value ?? field.defaultValue ?? false}
             onCheckedChange={(checked) => onChange(field.id, checked)}
+            disabled={readOnly}
           />
           <Label htmlFor={field.id} className="cursor-pointer">
             {field.label}
@@ -128,7 +135,7 @@ function FieldRenderer({
   }
 }
 
-export function LayoutRenderer({ layout, data, onChange }: LayoutRendererProps) {
+export function LayoutRenderer({ layout, data, onChange, readOnly }: LayoutRendererProps) {
   return (
     <div className="space-y-6">
       {layout.regions.map((region, index) => (
@@ -146,6 +153,7 @@ export function LayoutRenderer({ layout, data, onChange }: LayoutRendererProps) 
                     field={field}
                     value={data[field.id]}
                     onChange={onChange}
+                    readOnly={readOnly}
                   />
                 ))}
               </div>

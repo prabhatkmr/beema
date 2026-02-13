@@ -4,6 +4,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '../../i18n';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
+import { QuotesInProgressWrapper } from '../../components/QuotesInProgressWrapper';
 
 export const metadata: Metadata = {
   title: "Beema Portal",
@@ -42,7 +43,10 @@ export default async function LocaleLayout({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <h1 className="text-xl font-bold text-primary">Beema Portal</h1>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-3">
+              <QuotesInProgressWrapper />
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </nav>

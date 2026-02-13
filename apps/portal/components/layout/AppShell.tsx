@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 
 interface AppShellProps {
   title: string;
-  actionLabel: string;
-  onAction: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
+  actionSlot?: React.ReactNode;
   searchPlaceholder?: string;
   onBack?: () => void;
   onSearchChange?: (value: string) => void;
@@ -21,6 +22,7 @@ export function AppShell({
   title,
   actionLabel,
   onAction,
+  actionSlot,
   searchPlaceholder = "Search...",
   onBack,
   onSearchChange,
@@ -56,14 +58,16 @@ export function AppShell({
             />
           </div>
 
-          {/* Right: Action button */}
-          <Button
-            onClick={onAction}
-            className="shrink-0 rounded-full gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            {actionLabel}
-          </Button>
+          {/* Right: Action button or custom slot */}
+          {actionSlot ?? (
+            <Button
+              onClick={onAction}
+              className="shrink-0 rounded-full gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              {actionLabel}
+            </Button>
+          )}
         </div>
       </header>
 
