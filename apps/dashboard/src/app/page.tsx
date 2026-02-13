@@ -43,7 +43,7 @@ export default function DashboardPage() {
         {/* Applications Grid */}
         <div className="mb-12">
           <h3 className="text-xl font-semibold text-gray-900 mb-6">Applications</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Studio App */}
             <AppCard
               href="http://localhost:3010"
@@ -64,13 +64,23 @@ export default function DashboardPage() {
               external
             />
 
+            {/* Admin Console */}
+            <AppCard
+              href="http://localhost:3012"
+              icon={<Settings className="w-8 h-8" />}
+              title="Admin"
+              description="Global platform administration and tenant management"
+              color="green"
+              external
+            />
+
             {/* Kernel API */}
             <AppCard
               href="http://localhost:8080/swagger-ui.html"
               icon={<Database className="w-8 h-8" />}
               title="Kernel API"
-              description="Core API with AI-powered claim analysis"
-              color="green"
+              description="Core API with Swagger documentation"
+              color="blue"
               external
             />
           </div>

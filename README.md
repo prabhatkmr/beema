@@ -1,85 +1,89 @@
-# Beema Insurance Platform - Turborepo Monorepo
+# Beema Insurance Platform
 
-A modern, AI-powered insurance platform with metadata-driven architecture, event-driven workflows, and visual form builders.
+A modern, AI-powered insurance platform with metadata-driven architecture, bitemporal data modeling, event-driven workflows, and visual form builders.
 
-**Tech Stack:** Spring Boot 3, Next.js, Temporal.io, Apache Flink, Kafka, PostgreSQL, OpenRouter AI
+**Tech Stack:** Spring Boot 3, Next.js 16, Temporal.io, Apache Flink 1.18, Kafka, PostgreSQL 16, OpenRouter AI, Helm/K8s
 
-## 🏗️ Architecture
+## Architecture
 
-This is a **Turborepo monorepo** containing multiple microservices and shared packages:
+This is a **Turborepo monorepo** containing multiple microservices, frontend apps, and shared packages:
 
 ```
 beema/
-├── apps/                           # Microservices
-│   ├── beema-kernel/              # Core kernel (Spring Boot + Temporal + AI)
-│   ├── studio/                    # Visual builder (Next.js + dnd-kit)
-│   ├── beema-message-processor/   # Stream processor (Flink + Kafka)
-│   ├── metadata-service/          # Schema registry (Spring Boot)
-│   └── auth-service/              # Authentication (To be implemented)
-├── packages/                       # Shared libraries
-│   └── ui/                        # React components (Button, Card, Input, Label)
-├── platform/                       # Kubernetes/Helm charts
-├── docker-compose.yml             # Full stack (Temporal, Kafka, Postgres, etc.)
-├── turbo.json                     # Turborepo pipeline config
-└── package.json                   # Root workspace config
+├── apps/                              # Applications & Services
+│   ├── dashboard/                     # Hub landing page (Next.js, port 3000)
+│   ├── studio/                        # Visual builder & scheduling (Next.js, port 3010)
+│   ├── portal/                        # Policy & claims portal (Next.js, port 3011)
+│   ├── admin/                         # Global admin console (Next.js, port 3012)
+│   ├── beema-streaming/               # Speed layer - Kafka→Parquet→MinIO (Flink)
+│   ├── beema-message-processor/       # Stream processor - JEXL hooks (Flink)
+│   ├── metadata-service/              # Schema registry (Spring Boot, port 8082)
+│   └── auth-service/                  # Authentication (planned)
+├── beema-kernel/                      # Core kernel (Spring Boot, port 8080)
+├── packages/                          # Shared libraries
+│   └── ui/                            # React component library (@beema/ui)
+├── platform/                          # Kubernetes/Helm charts
+│   ├── Chart.yaml                     # Helm chart (v0.1.0)
+│   ├── values.yaml                    # Default values
+│   ├── templates/                     # 28 K8s templates
+│   └── observability/                 # Prometheus, Grafana provisioning
+├── infra/                             # Developer tooling
+│   ├── dev-aliases.sh                 # Shell aliases for local dev
+│   └── DEV_SETUP.md                   # Comprehensive setup guide
+├── docker-compose.yml                 # Full stack (24+ services)
+├── turbo.json                         # Turborepo pipeline config
+└── package.json                       # Root workspace config
 ```
 
-## ✨ Key Features
+## Key Features
 
-### 🤖 AI-Powered Intelligence
+### AI-Powered Intelligence
 - **Claim Analysis:** GPT-4, Claude, or Llama analyze claims and recommend actions
 - **5 AI Tools:** Field metadata, JEXL evaluation, business rules, validation, metrics
 - **Multi-Provider:** OpenRouter gives access to 10+ AI providers
 - **Auto Model Selection:** Smart routing based on claim complexity
-- **Cost Optimization:** Up to 95% cost reduction using Llama vs GPT-4
 
-### 🎨 Visual Form Builder
+### Visual Form Builder (Studio)
 - **Drag & Drop:** Build forms visually with 9 field types
 - **Real-time Validation:** Against beema-kernel metadata schema
 - **Export/Import:** sys_layouts JSON format
-- **Shared Components:** Reusable UI library (`@beema/ui`)
+- **Batch Scheduling:** Per-tenant scheduled job management
 
-### ⚡ Event-Driven Architecture
+### Event-Driven Architecture
 - **Temporal Workflows:** Durable, retryable policy and claim workflows
 - **Kafka Streaming:** Real-time message transformation with Flink
+- **Speed Layer:** Kafka → Parquet → MinIO datalake pipeline
 - **JEXL Expressions:** Pre-compiled for high performance
-- **Database Hooks:** Event-driven with sys_workflow_hooks and sys_message_hooks
 
-### 🔒 Enterprise-Grade
+### Enterprise-Grade
 - **Bitemporal Data:** Valid time + Transaction time
-- **Multi-Tenancy:** Row-Level Security
-- **Metadata-Driven:** Zero-code field additions
-- **Write Shield:** Mass assignment protection
-- **Caching Layer:** Caffeine with 4-hour TTL
+- **Multi-Tenancy:** Row-Level Security with cell-based datasource routing
+- **Metadata-Driven:** Zero-code field additions via JSONB flex-schema
+- **Global Admin Console:** Tenant, region, and datasource management
 
-### 📊 Analytics Layer
+### Analytics Layer
 - **Parquet Export:** Batch export agreements to columnar Parquet format via Spring Batch
 - **Cloud-Agnostic Storage:** Pluggable blob storage -- AWS S3, Azure Blob, MinIO, or local filesystem
 - **Dynamic Schema:** JSONB attributes auto-flattened into Avro → Parquet columns
 - **Tenant Isolation:** Hive-style partitioned paths (`tenant={id}/object=agreement/date={date}/`)
-- **Local Dev:** MinIO in Docker Compose simulates S3 with zero cloud dependencies
 
-```bash
-# Quick export example
-curl -X POST http://localhost:8080/api/v1/batch/export/parquet \
-  -H "Content-Type: application/json" \
-  -H "X-Tenant-ID: tenant-123" \
-  -d '{"tenantId": "tenant-123"}'
-```
+### Observability
+- **OpenTelemetry → Jaeger** for distributed tracing
+- **Prometheus** for metrics collection
+- **Grafana** for unified dashboards
+- **Micrometer** for application metrics
 
-See [Analytics Quick Start](docs/QUICKSTART.md) for the full setup guide.
-
-### 🌍 Market Support
+### Market Support
 All features support **Retail, Commercial, and London Market** contexts.
 
-## 🚀 Quick Start
+## Quick Start
 
-> 📖 **New Developers:** See [infra/DEV_SETUP.md](infra/DEV_SETUP.md) for a comprehensive setup guide with helpful shell aliases and troubleshooting tips.
+> See [infra/DEV_SETUP.md](infra/DEV_SETUP.md) for a comprehensive setup guide with shell aliases and troubleshooting tips.
 
 ### Prerequisites
 
 - **Node.js** >= 18.0.0
-- **pnpm** >= 8.0.0 (or npm/yarn)
+- **pnpm** >= 8.0.0
 - **Java** >= 21
 - **Maven** >= 3.8.0
 - **Docker** & **Docker Compose**
@@ -87,104 +91,198 @@ All features support **Retail, Commercial, and London Market** contexts.
 ### Installation
 
 ```bash
-# Install dependencies
+# Clone and install dependencies
 pnpm install
 
-# Install Turborepo globally (optional)
-pnpm add -g turbo
+# Load developer aliases (optional but recommended)
+source ./infra/dev-aliases.sh
+```
+
+### Start Development
+
+```bash
+# Option 1: Infrastructure only (run apps locally)
+beema-infra                  # Start all Docker infrastructure
+pnpm run dev:frontend        # Start Dashboard, Studio, Portal, Admin
+
+# Option 2: Everything in Docker
+docker compose up -d
+
+# Option 3: Full stack with local frontend
+beema-dev-full               # Infrastructure + backend in Docker, frontend local
 ```
 
 ### Environment Configuration
 
-Create `.env` files for each service:
-
-**beema-kernel** (`apps/beema-kernel/.env`):
+**beema-kernel** (`beema-kernel/.env` or environment variables):
 ```bash
-# OpenRouter AI
 OPENROUTER_API_KEY=sk-or-v1-your-key-here
-OPENROUTER_MODEL=anthropic/claude-3-sonnet-20240229
-
-# Database
 DATABASE_URL=jdbc:postgresql://localhost:5433/beema_kernel
-
-# Temporal
 TEMPORAL_HOST=localhost:7233
 ```
 
 **studio** (`apps/studio/.env.local`):
 ```bash
-# API
 BEEMA_KERNEL_URL=http://localhost:8080
-NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
-See `.env.example` files in each service for complete reference.
+**admin** (`apps/admin/.env.local`):
+```bash
+BEEMA_KERNEL_URL=http://localhost:8080
+```
 
-## 📦 Available Commands
+## Service URLs
 
-### Build All Services
+| Service | Port | URL |
+|---------|------|-----|
+| **Dashboard** (Hub) | 3000 | http://localhost:3000 |
+| **Studio** (Builder) | 3010 | http://localhost:3010 |
+| **Portal** (Policies) | 3011 | http://localhost:3011 |
+| **Admin** (Console) | 3012 | http://localhost:3012 |
+| **Kernel API** | 8080 | http://localhost:8080/swagger-ui.html |
+| **Metadata API** | 8082 | http://localhost:8082 |
+| **Keycloak** | 8180 | http://localhost:8180 (admin/admin) |
+| **Temporal UI** | 8088 | http://localhost:8088 |
+| **Grafana** | 3002 | http://localhost:3002 (admin/admin) |
+| **Jaeger** | 16686 | http://localhost:16686 |
+| **Prometheus** | 9090 | http://localhost:9090 |
+| **Flink Dashboard** | 8081 | http://localhost:8081 |
+| **MinIO Console** | 9001 | http://localhost:9001 (admin/password123) |
+| **Inngest** | 8288 | http://localhost:8288 |
+| **Kafka** | 9092 | localhost:9092 |
+| **PostgreSQL** | 5433 | localhost:5433 (beema/beema) |
+
+## Docker Compose
+
+Start the complete platform with all dependencies:
 
 ```bash
+docker compose up -d
+```
+
+**24+ services included:**
+
+| Category | Services |
+|----------|----------|
+| **Database** | PostgreSQL 16 (port 5433) |
+| **Auth** | Keycloak 23 (port 8180) |
+| **Messaging** | Zookeeper + Kafka (port 9092) + topic init |
+| **Workflows** | Temporal Server (port 7233) + Temporal UI (port 8088) |
+| **Storage** | MinIO S3 (ports 9000/9001) + bucket init |
+| **Streaming** | Flink JobManager (port 8081) + TaskManagers (x2) |
+| **Observability** | Jaeger (port 16686) + Prometheus (port 9090) + Grafana (port 3002) |
+| **Background Jobs** | Inngest (port 8288) |
+| **Backend** | beema-kernel (port 8080) + metadata-service (port 8082) |
+| **Flink Jobs** | beema-message-processor + beema-streaming |
+| **Frontend** | Dashboard (port 3000) + Studio (port 3010) |
+
+**Verify all services:**
+```bash
+./docker-compose-verify.sh
+./platform/observability/verify-stack.sh
+```
+
+## Applications & Services
+
+### Dashboard (port 3000)
+Hub landing page with links to all platform applications.
+
+**Tech:** Next.js 16, Tailwind CSS v4, `@beema/ui`
+
+### Studio (port 3010)
+Visual form builder, message blueprint editor, and batch schedule management.
+- **Layout Builder:** Drag-and-drop form designer with 9 field types
+- **Blueprint Editor:** Visual message mapping between systems
+- **Batch Schedules:** Per-tenant scheduled job management with Temporal integration
+
+**Tech:** Next.js 16, TypeScript, Tailwind CSS v4, dnd-kit, Zustand
+
+### Portal (port 3011)
+Policy and claims management portal for end users.
+- Agreement management with bitemporal queries
+- Task management and workflow tracking
+- Metadata-driven forms
+
+**Tech:** Next.js 16, TypeScript, Tailwind CSS v4, shadcn/ui, TanStack Query
+
+### Admin Console (port 3012)
+Global administration console for platform operators.
+- **Tenant Management:** Create, update, activate, suspend, deactivate tenants
+- **Region Management:** Data residency regions with compliance rules
+- **Datasource Routing:** Manage database connection pools for cell-based routing
+- **System Health:** Service status monitoring with links to observability tools
+- **Dashboard:** Platform overview with tenant/region/agreement statistics
+
+**Tech:** Next.js 16, TypeScript, Tailwind CSS v4, `@beema/ui`, lucide-react
+
+### beema-kernel (port 8080)
+Core agreement kernel with bitemporal data, AI analysis, and workflow orchestration.
+- Metadata-driven schema with JSONB flex-schema
+- Pre-compiled JEXL expressions with Write Shield
+- Temporal workflow orchestration (Policy, Claim workflows)
+- AI-powered claim analysis with OpenRouter
+- Multi-tenancy with Row-Level Security
+- Spring Batch Parquet export pipeline
+- Admin API for tenant/region/datasource management
+
+**Tech:** Spring Boot 3, PostgreSQL, Temporal.io, Spring AI, Spring Batch, Caffeine Cache
+
+### metadata-service (port 8082)
+Schema registry for field definitions, validation rules, UI layouts, and market-specific configurations.
+
+**Tech:** Spring Boot 3, PostgreSQL
+
+### beema-message-processor
+Flink streaming job for real-time message transformation.
+- Reads from `raw-messages` Kafka topic
+- Applies JEXL hooks from `sys_message_hooks` table
+- Writes to `beema-events` topic
+
+**Tech:** Apache Flink 1.18, Kafka, PostgreSQL, JEXL
+
+### beema-streaming
+Flink speed layer for real-time data lake ingestion.
+- Reads from `beema.events.policy_change` Kafka topic
+- Writes Parquet files to MinIO datalake (`s3a://beema-datalake/speed/policy/`)
+- Checkpointing with RocksDB state backend
+
+**Tech:** Apache Flink 1.18, Kafka, MinIO/S3, Parquet
+
+### Shared Packages
+
+**@beema/ui** — React component library:
+- Button (4 variants), Card, Input, Label
+- Used by Dashboard, Studio, Portal, and Admin apps
+
+## Available Commands
+
+```bash
+# Build all services
 pnpm build
-# or
-turbo build
-```
 
-Builds all services in parallel with intelligent caching.
-
-### Run Tests
-
-```bash
+# Run all tests
 pnpm test
-# or
-turbo test
-```
 
-Runs tests for all services. Tests are cached based on code changes.
-
-### Lint
-
-```bash
+# Lint all services
 pnpm lint
-# or
-turbo lint
-```
 
-Runs linting (checkstyle for Java services).
-
-### Development Mode
-
-```bash
+# Development mode (all services)
 pnpm dev
-# or
-turbo dev
-```
 
-Starts all services in development mode with hot-reload.
+# Frontend apps only (Dashboard + Studio + Portal + Admin)
+pnpm run dev:frontend
 
-### Clean
+# Backend services only (Docker)
+pnpm run dev:backend
 
-```bash
+# Clean build artifacts
 pnpm clean
-# or
-turbo clean
-```
 
-Removes all build artifacts (`target/`, `dist/`, etc.).
-
-### Format Code
-
-```bash
+# Format code
 pnpm format
-# or
-turbo format
 ```
 
-Formats code using Spotless (Java) or Prettier (JS/TS).
-
-## 🔧 Working with Individual Services
-
-### Run a specific service
+### Working with Individual Services
 
 ```bash
 # Build only beema-kernel
@@ -193,261 +291,164 @@ turbo build --filter=@beema/kernel
 # Test only metadata-service
 turbo test --filter=@beema/metadata-service
 
-# Dev mode for beema-kernel
-turbo dev --filter=@beema/kernel
+# Run Studio in dev mode
+turbo dev --filter=@beema/studio
+
+# Run Admin Console
+turbo dev --filter=@beema/admin
 ```
 
-### Navigate to a service
+## Kubernetes Deployment
 
-```bash
-cd apps/beema-kernel
-mvn spring-boot:run
-```
-
-## 🐳 Docker Compose
-
-Start the complete platform with all dependencies:
-
-```bash
-docker-compose up -d
-```
-
-**Services included:**
-- PostgreSQL 16 (port 5433) - Shared database
-- Keycloak (port 8180) - Authentication
-- Temporal Server (port 7233) - Workflow engine
-- Temporal UI (port 8088) - Workflow monitoring
-- Zookeeper + Kafka (port 9092) - Message broker
-- **MinIO (ports 9000/9001)** - S3-compatible object storage
-- **Jaeger (port 16686)** - Distributed tracing backend
-- **Prometheus (port 9090)** - Metrics collection
-- **Grafana (port 3001)** - Observability dashboards
-- **Flink JobManager (port 8081)** - Stream processing cluster
-- **Flink TaskManager** - Stream processing workers (2 instances)
-- beema-kernel (port 8080) - Core API + Temporal worker
-- metadata-service (port 8082) - Schema registry
-- beema-message-processor - Flink streaming job
-- studio (port 3000) - Visual builder
-
-**Access URLs:**
-- Studio UI: http://localhost:3000
-- Beema Kernel API: http://localhost:8080/swagger-ui
-- Temporal UI: http://localhost:8088
-- Keycloak: http://localhost:8180
-- **MinIO Console**: http://localhost:9001 (admin/password123)
-- **Flink Web UI**: http://localhost:8081
-- **Grafana (Observability)**: http://localhost:3001 (admin/admin)
-- **Jaeger (Tracing)**: http://localhost:16686
-- **Prometheus (Metrics)**: http://localhost:9090
-
-**Verify all services:**
-```bash
-./docker-compose-verify.sh
-
-# Verify observability stack specifically
-./platform/observability/verify-stack.sh
-```
-
-## ☸️ Kubernetes Deployment
-
-Deploy to Kubernetes using Helm:
+Deploy to Kubernetes using the Helm chart in `platform/`:
 
 ```bash
 cd platform
 helm install beema . -f values.yaml
 ```
 
-## 📊 Turborepo Features
+### Helm Chart Overview
 
-### Intelligent Caching
+| | |
+|---|---|
+| **Chart Version** | 0.1.0 |
+| **App Version** | 1.0.0 |
+| **Chart Type** | application |
 
-Turborepo caches build outputs based on:
-- Source code changes
-- Dependencies
-- Environment variables
-- Configuration files
+### Templates (28 files)
 
-**Result:** Only rebuild what changed. 10x faster builds!
+The Helm chart includes templates for all platform services:
 
-### Parallel Execution
+| Category | Templates |
+|----------|-----------|
+| **Core** | `deployment.yaml`, `service.yaml`, `configmap.yaml`, `secrets.yaml`, `hpa.yaml` |
+| **Temporal Worker** | `temporal-worker-deployment.yaml`, `temporal-worker-service.yaml`, `temporal-worker-hpa.yaml`, `temporal-worker-servicemonitor.yaml` |
+| **Studio** | `studio/deployment.yaml`, `studio/service.yaml` |
+| **Metadata** | `metadata/deployment.yaml`, `metadata/service.yaml` |
+| **Flink** | `flink/jobmanager-deployment.yaml`, `flink/taskmanager-deployment.yaml`, `flink/jobmanager-service.yaml` |
+| **Kafka** | `kafka/deployment.yaml`, `kafka/service.yaml` |
+| **Inngest** | `inngest/deployment.yaml`, `inngest/service.yaml` |
+| **Message Processor** | `processor/deployment.yaml`, `processor/service.yaml` |
 
-Services build in parallel respecting dependency graph:
+### Configuration
+
+Key values in `values.yaml`:
+
+```yaml
+image:
+  repository: beema-kernel
+  tag: "1.0.0"
+
+replicaCount: 3
+
+resources:
+  requests: { memory: "1Gi", cpu: "500m" }
+  limits: { memory: "2Gi", cpu: "1000m" }
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+
+externalDatabase:
+  host: beema-prod-postgres.rds.amazonaws.com
+  database: beema_prod
 ```
-metadata-service  ┐
-                  ├─> beema-kernel (depends on metadata-service)
-auth-service      ┘
-```
 
-### Remote Caching (Optional)
+See [platform/DEPLOY.md](platform/DEPLOY.md) for the full deployment guide.
 
-Enable remote caching for team collaboration:
+## Developer Aliases
+
+Load shell aliases for faster development:
 
 ```bash
-# Login to Vercel (for remote cache)
-turbo login
-
-# Link to your team
-turbo link
+source ./infra/dev-aliases.sh
 ```
 
-## 🏢 Applications & Services
+| Alias | Description |
+|-------|-------------|
+| `beema-infra` | Start all infrastructure services |
+| `beema-infra-down` | Stop all Docker containers |
+| `beema-infra-clean` | Stop + remove volumes (clean slate) |
+| `beema-dev` | Infrastructure + frontend apps |
+| `beema-dev-full` | Infrastructure + backend + frontend |
+| `beema-health` | Show status + all service URLs |
+| `beema-up` | Start everything in Docker |
+| `beema-down` | Stop everything |
 
-### beema-kernel
+## Technology Stack
 
-**Core Agreement Kernel** - Bitemporal insurance agreement system with:
-- Metadata-driven schema with JSONB flex-schema
-- Pre-compiled JEXL expressions with Write Shield (mass assignment protection)
-- Temporal workflow orchestration (PolicyWorkflow, ClaimWorkflow)
-- **AI-Powered Claim Analysis** with OpenRouter (GPT-4, Claude, Llama)
-- Multi-tenancy with Row-Level Security
-- 5 AI-callable tools for intelligent decision making
+### Backend
+- **Spring Boot 3.x** — Java microservices framework
+- **PostgreSQL 16** — Bitemporal database with JSONB
+- **Temporal.io 1.25** — Workflow orchestration
+- **Apache Flink 1.18** — Stream processing
+- **Kafka (Confluent 7.6)** — Event streaming
+- **Spring AI** — AI integration framework
+- **Spring Batch** — Batch processing (Parquet export)
+- **JEXL** — Expression language
+- **Caffeine** — In-memory caching
 
-**Tech:** Spring Boot 3, PostgreSQL, Temporal.io, Caffeine Cache, Spring AI
+### Frontend
+- **Next.js 16** — React framework with App Router
+- **TypeScript 5** — Type-safe JavaScript
+- **Tailwind CSS v4** — Utility-first styling
+- **shadcn/ui + Radix UI** — Component library
+- **dnd-kit** — Drag and drop
+- **Zustand** — State management
+- **TanStack Query** — Server state
 
-**Port:** 8080
+### Infrastructure
+- **Docker & Docker Compose** — Containerization (24+ services)
+- **Kubernetes & Helm** — Orchestration (28 templates, HPA, ServiceMonitor)
+- **Turborepo** — Monorepo build system with caching
+- **pnpm** — Package manager (workspaces)
+- **Maven** — Java build tool
 
-**Key Features:**
-- Policy lifecycle workflows (SUBMITTED → ISSUED)
-- AI claim analyzer with 6 recommendation types
-- Retryable activities with exponential backoff
-- Metadata caching layer (4-hour TTL)
+### Observability
+- **OpenTelemetry** — Distributed tracing instrumentation
+- **Jaeger** — Trace collection and visualization
+- **Prometheus** — Metrics collection and alerting
+- **Grafana** — Unified observability dashboards
+- **Micrometer** — Application metrics
 
-### studio
+### AI & LLMs
+- **OpenRouter** — Unified LLM API
+- Supports: GPT-4, Claude, Gemini, Llama 3.1, and more
+- Function calling for tool use
 
-**Visual Form Builder** - Next.js application for designing layouts and blueprints:
-- **Layout Builder:** Drag-and-drop form designer with 9 field types
-- **Blueprint Editor:** Visual message mapping between systems
-- **Canvas:** Sortable field blocks with properties panel
-- **API Integration:** Validates against beema-kernel metadata schema
-
-**Tech:** Next.js 16 (App Router), TypeScript, Tailwind CSS, dnd-kit, Zustand
-
-**Port:** 3000
-
-**Key Features:**
-- Real-time validation with beema-kernel
-- Export/import layouts as JSON (sys_layouts schema)
-- Shared UI components from `@beema/ui`
-- Three-panel interface (sidebar, canvas, properties)
-
-### beema-message-processor
-
-**Stream Processor** - Flink job for real-time message transformation:
-- Reads from `raw-messages` Kafka topic
-- Applies JEXL hooks from `sys_message_hooks` table
-- Pre/Transform/Post processing pipeline
-- Writes to `processed-messages` topic
-
-**Tech:** Apache Flink 1.18, Kafka, PostgreSQL, JEXL
-
-**Features:**
-- Database-driven transformation rules
-- Retail, Commercial, and London Market support
-- Checkpointing and state management
-- Error handling with fail_fast, log_continue, retry
-
-### metadata-service
-
-**Schema Registry** - Manages metadata definitions for:
-- Field definitions and validation rules
-- UI layouts and calculation rules
-- Market-specific configurations
-
-**Tech:** Spring Boot 3, PostgreSQL
-
-**Port:** 8081
-
-### auth-service
-
-**Authentication Service** - OAuth2/JWT authentication (To be implemented)
-
-**Port:** 8082
-
-## 📦 Shared Packages
-
-### @beema/ui
-
-Shared React component library:
-- **Button** - 4 variants (primary, secondary, outline, ghost)
-- **Card** - Card, CardHeader, CardTitle, CardContent
-- **Input** - Text input with error states
-- **Label** - Form labels with required indicator
-
-Used by Studio and future frontend applications.
-
-## 🛠️ Adding a New Service
-
-1. Create service in `apps/`:
-```bash
-mkdir -p apps/new-service
-cd apps/new-service
-```
-
-2. Create `package.json`:
-```json
-{
-  "name": "@beema/new-service",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "build": "mvn clean package -DskipTests",
-    "test": "mvn test",
-    "dev": "mvn spring-boot:run"
-  }
-}
-```
-
-3. Turborepo will automatically discover it!
-
-## 📚 Documentation
+## Documentation
 
 ### Platform Guides
-- [Quick Start](QUICK_START.md) - 5-minute getting started
-- [Docker Setup](DOCKER_SETUP.md) - Complete Docker guide
-- [Turborepo Migration](TURBOREPO_MIGRATION.md) - Monorepo architecture
-- **[Observability Guide](platform/observability/README.md)** - OpenTelemetry, Jaeger, Prometheus, Grafana
+- [Quick Start](QUICK_START.md)
+- [Docker Setup](DOCKER_SETUP.md)
+- [Dev Setup Guide](infra/DEV_SETUP.md)
+- [Observability Guide](platform/observability/README.md)
+- [K8s Deployment Guide](platform/DEPLOY.md)
 
-### Analytics Layer
-- [Analytics Quick Start](docs/QUICKSTART.md) - 5-minute export pipeline setup
-- [Batch API Reference](docs/api/BATCH_API.md) - Export endpoint documentation
-- [Architecture Guide](docs/architecture/ANALYTICS_LAYER.md) - Data flow and design decisions
-- [Deployment Guide](docs/deployment/ANALYTICS_DEPLOYMENT.md) - Configuration and troubleshooting
-
-### Flink Speed Layer
-- Flink cluster with S3/MinIO integration for checkpoints and data lake writes
-- Start: `docker-compose up -d flink-jobmanager` (TaskManagers auto-scale)
-- Web UI: http://localhost:8081
-- Submit jobs: `/opt/flink/bin/flink run --jobmanager flink-jobmanager:8081 your-job.jar`
-- MinIO buckets: `beema-datalake` (output), `beema-checkpoints` (state)
+### Analytics & Streaming
+- [Analytics Quick Start](docs/QUICKSTART.md)
+- [Batch API Reference](docs/api/BATCH_API.md)
+- [Architecture Guide](docs/architecture/ANALYTICS_LAYER.md)
+- [Deployment Guide](docs/deployment/ANALYTICS_DEPLOYMENT.md)
 
 ### beema-kernel
-- [Temporal Workflow Guide](apps/beema-kernel/TEMPORAL_WORKFLOW_GUIDE.md) - Workflow system
-- [Policy Workflow Guide](apps/beema-kernel/POLICY_WORKFLOW_GUIDE.md) - Policy state machine
-- [Message Processing Guide](apps/beema-kernel/MESSAGE_PROCESSING.md) - Message hooks
-- [Metadata Cache Guide](apps/beema-kernel/METADATA_CACHE.md) - Caching layer
-- [AI Agent Guide](apps/beema-kernel/AI_AGENT_GUIDE.md) - AI integration
-- [OpenRouter Setup](apps/beema-kernel/OPENROUTER_SETUP.md) - AI configuration
-- [AI Quick Start](apps/beema-kernel/AI_QUICK_START.md) - Get started with AI
+- [Temporal Workflow Guide](apps/beema-kernel/TEMPORAL_WORKFLOW_GUIDE.md)
+- [Policy Workflow Guide](apps/beema-kernel/POLICY_WORKFLOW_GUIDE.md)
+- [Message Processing Guide](apps/beema-kernel/MESSAGE_PROCESSING.md)
+- [Metadata Cache Guide](apps/beema-kernel/METADATA_CACHE.md)
+- [AI Agent Guide](apps/beema-kernel/AI_AGENT_GUIDE.md)
+- [OpenRouter Setup](apps/beema-kernel/OPENROUTER_SETUP.md)
 
-### studio
-- [Studio README](apps/studio/README.md) - Application overview
-- [Layout Builder Guide](apps/studio/LAYOUT_BUILDER.md) - Form builder
-- [Architecture](apps/studio/ARCHITECTURE.md) - Technical design
-- [API Documentation](apps/studio/app/api/layouts/README.md) - REST endpoints
+### Frontend Apps
+- [Studio README](apps/studio/README.md)
+- [Layout Builder Guide](apps/studio/LAYOUT_BUILDER.md)
+- [UI Components](packages/ui/README.md)
 
-### beema-message-processor
-- [Flink Processor README](apps/beema-message-processor/README.md) - Stream processing
-- [Configuration Guide](apps/beema-message-processor/CONFIG.md) - Setup
+## Example Workflows
 
-### Shared Packages
-- [UI Components](packages/ui/README.md) - Component library
-
-## 💡 Example Workflows
-
-### Create and Analyze a Claim with AI
-
+### Analyze a Claim with AI
 ```bash
-# 1. Start AI-powered claim analysis
 curl -X POST http://localhost:8080/api/v1/claims/analysis/analyze \
   -H "Content-Type: application/json" \
   -d '{
@@ -457,144 +458,66 @@ curl -X POST http://localhost:8080/api/v1/claims/analysis/analyze \
     "policyNumber": "POL-001",
     "marketContext": "RETAIL"
   }'
-
-# Response:
-{
-  "nextAction": "APPROVE_IMMEDIATELY",
-  "confidence": 0.95,
-  "reasoning": "Low-value claim, all validations pass..."
-}
 ```
 
-### Build a Form in Studio
-
+### Export Agreements to Parquet
 ```bash
-# 1. Open Studio
-open http://localhost:3000/canvas
-
-# 2. Drag fields from sidebar to canvas
-# 3. Configure field properties
-# 4. Export as sys_layouts JSON
-# 5. Save to beema-kernel for validation
+curl -X POST http://localhost:8080/api/v1/batch/export/parquet \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: tenant-123" \
+  -d '{"tenantId": "tenant-123"}'
 ```
 
-### Process Messages with Flink
-
+### Monitor Observability Stack
 ```bash
-# 1. Send message to Kafka
-echo '{"type":"claim","data":{...}}' | \
-  kafka-console-producer --topic raw-messages
-
-# 2. Flink applies JEXL hooks from sys_message_hooks
-# 3. Transformed message appears in processed-messages topic
-```
-
-### Monitor Workflows in Temporal
-
-```bash
-# 1. Open Temporal UI
-open http://localhost:8088
-
-# 2. View PolicyWorkflow executions
-# 3. See activity retries, signals, queries
-# 4. Debug failed workflows
-```
-
-### Monitor Application with Observability Stack
-
-```bash
-# 1. Generate sample traces
-for i in {1..10}; do
-  curl http://localhost:8080/actuator/health
-  sleep 1
-done
-
-# 2. View traces in Jaeger
+# View traces in Jaeger
 open http://localhost:16686
-# Search: Service = "beema-kernel"
 
-# 3. Import Spring Boot dashboard in Grafana
-open http://localhost:3001
-# Login: admin/admin
-# Dashboards → Import → ID: 19004
+# Grafana dashboards (admin/admin)
+open http://localhost:3002
 
-# 4. Query metrics in Prometheus
+# Prometheus metrics
 open http://localhost:9090
-# Query: rate(http_server_requests_seconds_count[5m])
 
-# 5. Verify observability stack
+# Verify stack
 ./platform/observability/verify-stack.sh
 ```
 
-## 🧪 Testing
+## Current Status
 
-### Unit Tests
+### Production Ready
+- Metadata-driven kernel with JEXL expressions
+- Temporal workflows (Policy, Claim)
+- AI-powered claim analysis with OpenRouter
+- Flink stream processing (message processor + speed layer)
+- Visual form builder (Studio)
+- Batch scheduling with per-tenant Temporal integration
+- Analytics layer (Parquet export, cloud-agnostic blob storage, MinIO)
+- Global Admin Console (tenant/region/datasource management)
+- Observability stack (OpenTelemetry, Jaeger, Prometheus, Grafana)
+- Policy & Claims Portal
+- Docker Compose full stack (24+ services)
 
-```bash
-turbo test
-```
+### In Development
+- Keycloak authentication integration
+- Inngest integration gateway (webhooks)
+- Production Kubernetes deployments
 
-### Integration Tests (Requires Docker)
+### Planned
+- Claims management workflows
+- Document processing with OCR
+- Analytics dashboard with real-time charts
 
-```bash
-# Start dependencies
-docker-compose up -d postgres temporal
+## Troubleshooting
 
-# Run integration tests
-cd apps/beema-kernel
-mvn test -Dtest=*Integration*
-```
+- **Build failures:** Clear cache with `rm -rf .turbo`
+- **Docker issues:** Run `./docker-compose-verify.sh`
+- **AI errors:** Verify `OPENROUTER_API_KEY` is set
+- **Temporal issues:** Check http://localhost:8088
+- **Missing node_modules:** Run `pnpm install` from project root
+- **Flink not reachable:** Ensure `flink-jobmanager` is running: `docker compose up -d flink-jobmanager`
 
-## 🔍 Monitoring Cache Performance
-
-```bash
-# View Turborepo cache stats
-turbo run build --summarize
-
-# Clear Turborepo cache
-rm -rf .turbo
-```
-
-## 🛠️ Technology Stack
-
-### Backend
-- **Spring Boot 3.x** - Java microservices framework
-- **PostgreSQL 16** - Bitemporal database with JSONB
-- **Temporal.io** - Workflow orchestration
-- **Apache Flink 1.18** - Stream processing
-- **Kafka** - Event streaming
-- **Spring AI** - AI integration framework
-- **JEXL** - Expression language
-- **Caffeine** - In-memory caching
-
-### Frontend
-- **Next.js 16** - React framework with App Router
-- **TypeScript 5** - Type-safe JavaScript
-- **Tailwind CSS v4** - Utility-first styling
-- **dnd-kit** - Drag and drop
-- **Zustand** - State management
-- **TanStack Query** - Server state
-
-### Infrastructure
-- **Docker & Docker Compose** - Containerization
-- **Kubernetes & Helm** - Orchestration
-- **Turborepo** - Monorepo build system
-- **pnpm** - Package manager
-- **Maven** - Java build tool
-
-### Observability
-- **OpenTelemetry** - Distributed tracing instrumentation
-- **Jaeger** - Trace collection and visualization
-- **Prometheus** - Metrics collection and alerting
-- **Grafana** - Unified observability dashboards
-- **Micrometer** - Application metrics
-
-### AI & LLMs
-- **OpenRouter** - Unified LLM API
-- Supports: GPT-4, Claude 3, Gemini, Llama 3.1, and more
-- Function calling for tool use
-
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch
 2. Make changes
@@ -609,58 +532,12 @@ rm -rf .turbo
 - Support all market contexts (Retail, Commercial, London Market)
 - Use JEXL for business rules
 - Write comprehensive tests
-- Document all new features
 
-## 📄 License
+## License
 
 ISC
 
-## 🚧 Current Status
-
-### Production Ready
-✅ Metadata-driven kernel with JEXL expressions
-✅ Temporal workflows (Policy, Claim)
-✅ AI-powered claim analysis with OpenRouter
-✅ Flink stream processing
-✅ Visual form builder (Studio)
-✅ **Observability stack (OpenTelemetry, Jaeger, Prometheus, Grafana)**
-✅ **Analytics layer (Parquet export, cloud-agnostic blob storage, MinIO)**
-✅ Docker Compose full stack
-
-### In Development
-🔄 Keycloak authentication integration
-🔄 Inngest integration gateway (webhooks)
-🔄 Production Kubernetes deployments
-
-### Planned
-📋 Claims management UI
-📋 Policy administration UI
-📋 Analytics dashboard
-📋 Document processing with OCR
-
-## 🆘 Support & Resources
-
-### Getting Help
-- Check the [Documentation](#-documentation) section
-- Review service-specific READMEs
-- See `.env.example` files for configuration
-
-### Troubleshooting
-- **Build failures:** Clear cache with `rm -rf .turbo`
-- **Docker issues:** Run `./docker-compose-verify.sh`
-- **AI errors:** Verify `OPENROUTER_API_KEY` is set
-- **Temporal issues:** Check http://localhost:8088
-
-## 🔗 Links
-
-- [Turborepo Docs](https://turbo.build/repo/docs)
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [Temporal.io](https://temporal.io)
-- [Next.js](https://nextjs.org)
-- [OpenRouter](https://openrouter.ai)
-- [Apache Flink](https://flink.apache.org)
-
 ---
 
-**Beema** - Modern Insurance Platform with AI-Powered Workflows
-Built with ❤️ using Turborepo, Spring Boot, Next.js, and Temporal.io
+**Beema** — Modern Insurance Platform with AI-Powered Workflows
+Built with Turborepo, Spring Boot, Next.js, Temporal.io, and Apache Flink

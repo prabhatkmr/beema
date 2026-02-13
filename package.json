@@ -13,7 +13,7 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
-    "dev:frontend": "turbo run dev --filter=@beema/dashboard --filter=@beema/studio --filter=@beema/portal",
+    "dev:frontend": "turbo run dev --filter=@beema/dashboard --filter=@beema/studio --filter=@beema/portal --filter=@beema/admin",
     "dev:backend": "docker compose up -d beema-kernel metadata-service beema-message-processor beema-streaming",
     "clean": "turbo run clean",
     "format": "turbo run format"
