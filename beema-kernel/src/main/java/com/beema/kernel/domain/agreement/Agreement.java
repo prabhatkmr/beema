@@ -1,7 +1,6 @@
 package com.beema.kernel.domain.agreement;
 
 import com.beema.kernel.domain.base.BitemporalEntity;
-import com.beema.kernel.domain.base.TemporalKey;
 import com.beema.kernel.domain.metadata.MarketContext;
 import com.beema.kernel.util.JsonbConverter;
 import jakarta.persistence.*;

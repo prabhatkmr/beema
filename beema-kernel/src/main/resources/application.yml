@@ -83,10 +83,11 @@ management:
       show-details: when-authorized
       probes:
         enabled: true
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
+  metrics:
     tags:
       application: ${spring.application.name}
       environment: ${SPRING_PROFILE:dev}
