@@ -41,7 +41,10 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className={inter.className}>
         <NextIntlClientProvider messages={messages}>
-          <nav className="border-b bg-background">
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          <nav className="border-b bg-background" role="navigation" aria-label="Main navigation">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between py-4">
                 <h1 className="text-xl font-bold text-primary">Beema Portal</h1>
@@ -49,7 +52,9 @@ export default async function LocaleLayout({
               </div>
             </div>
           </nav>
-          <main className="container mx-auto px-4 py-6">{children}</main>
+          <main id="main-content" className="container mx-auto px-4 py-6" role="main">
+            {children}
+          </main>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -100,32 +100,37 @@ function AppLauncher({ title, icon: Icon, href, color, description, badge, badge
         error: "bg-red-500",
         success: "bg-green-500"
     };
+    const badgeLabel = badge !== undefined && badge !== 0 ? ` - ${badge} pending items` : '';
+    const ariaLabel = `${title}${description ? `: ${description}` : ''}${badgeLabel}`;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
         href: href,
-        className: "flex flex-col items-center gap-3 group relative",
+        className: "flex flex-col items-center gap-3 group relative focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 -m-2 transition-shadow",
+        "aria-label": ariaLabel,
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: `w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 relative`,
+                className: `w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 group-focus:scale-105 relative`,
+                "aria-hidden": "true",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Icon, {
                         className: "w-8 h-8 text-white"
                     }, void 0, false, {
                         fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-                        lineNumber: 38,
+                        lineNumber: 43,
                         columnNumber: 9
                     }, this),
                     badge !== undefined && badge !== 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: `absolute -top-1 -right-1 ${badgeColors[badgeVariant]} text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md`,
+                        "aria-label": `${badge} pending`,
                         children: badge
                     }, void 0, false, {
                         fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-                        lineNumber: 40,
+                        lineNumber: 45,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-                lineNumber: 35,
+                lineNumber: 39,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -133,24 +138,25 @@ function AppLauncher({ title, icon: Icon, href, color, description, badge, badge
                 children: title
             }, void 0, false, {
                 fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-                lineNumber: 47,
+                lineNumber: 53,
                 columnNumber: 7
             }, this),
             badge !== undefined && badge !== 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                 className: "text-xs text-gray-500",
+                "aria-hidden": "true",
                 children: [
                     badge,
                     " pending"
                 ]
             }, void 0, true, {
                 fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-                lineNumber: 51,
+                lineNumber: 57,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/apps/portal/components/dashboard/AppLauncher.tsx",
-        lineNumber: 31,
+        lineNumber: 34,
         columnNumber: 5
     }, this);
 }
