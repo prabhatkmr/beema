@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { FileText, ChevronDown, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -20,6 +21,7 @@ interface QuotesInProgressProps {
 }
 
 export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
+  const t = useTranslations('quotesInProgress');
   const [isOpen, setIsOpen] = useState(false);
   const [quotes, setQuotes] = useState<QuoteInProgress[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -109,11 +111,11 @@ export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
           "flex items-center gap-2 px-3 py-1.5 text-sm border rounded-md bg-background hover:bg-muted/50 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors",
           quotes.length > 0 && "border-blue-500"
         )}
-        aria-label="Quotes in progress"
+        aria-label={t('ariaLabel')}
         aria-expanded={isOpen}
       >
         <FileText className="h-4 w-4" />
-        <span>Quotes</span>
+        <span>{t('button')}</span>
         {quotes.length > 0 && (
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">
             {quotes.length}
@@ -125,11 +127,11 @@ export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
       {isOpen && (
         <div className="absolute right-0 z-50 mt-2 w-80 bg-background border rounded-md shadow-lg">
           <div className="border-b px-4 py-3">
-            <h3 className="font-semibold text-sm">Quotes in Progress</h3>
+            <h3 className="font-semibold text-sm">{t('title')}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               {quotes.length === 0
-                ? 'No saved quotes'
-                : `${quotes.length} quote${quotes.length === 1 ? '' : 's'} saved`}
+                ? t('noSavedQuotes')
+                : t('quoteSaved', { count: quotes.length })}
             </p>
           </div>
 
@@ -137,8 +139,8 @@ export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
             {quotes.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 <FileText className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                <p>No quotes in progress</p>
-                <p className="text-xs mt-1">Start a new quote to save your work</p>
+                <p>{t('empty')}</p>
+                <p className="text-xs mt-1">{t('emptyHint')}</p>
               </div>
             ) : (
               <div className="p-2">
@@ -151,7 +153,7 @@ export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                          {quote.title || 'Untitled Quote'}
+                          {quote.title || t('untitled')}
                         </p>
                         {quote.product && (
                           <p className="text-xs text-muted-foreground truncate">
@@ -172,7 +174,7 @@ export function QuotesInProgress({ onResumeQuote }: QuotesInProgressProps) {
                         size="sm"
                         onClick={(e) => deleteQuote(quote.id, e)}
                         className="opacity-0 group-hover:opacity-100 h-7 w-7 p-0"
-                        aria-label="Delete quote"
+                        aria-label={t('deleteQuote')}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Globe, Database, Activity, Plus, ArrowRight, RefreshCw } from 'lucide-react';
+import { Users, Globe, Database, Activity, Plus, ArrowRight, RefreshCw, WifiOff } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { StatCard } from '@/components/StatCard';
 import { InfrastructureCard } from '@/components/InfrastructureCard';
@@ -10,25 +10,44 @@ import { useInfrastructureStatus } from '@/hooks/useInfrastructureStatus';
 import type { DashboardStats } from '@/types/admin';
 import * as api from '@/lib/api';
 
+const DEMO_STATS: DashboardStats = {
+  totalTenants: 12,
+  activeTenants: 8,
+  suspendedTenants: 2,
+  totalRegions: 4,
+  activeRegions: 4,
+  totalDatasources: 3,
+  tierBreakdown: { STANDARD: 5, PREMIUM: 4, ENTERPRISE: 3 },
+};
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const { data: infraStatus, loading: infraLoading, refetch: refetchInfra } = useInfrastructureStatus();
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const data = await api.getDashboardStats();
-        setStats(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load stats');
-      } finally {
-        setLoading(false);
-      }
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.getDashboardStats();
+      setStats(data);
+      setIsDemo(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load stats');
+      setStats(DEMO_STATS);
+      setIsDemo(true);
+    } finally {
+      setLoading(false);
     }
-    fetchStats();
   }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const displayStats = stats ?? DEMO_STATS;
 
   return (
     <div className="p-8">
@@ -37,9 +56,24 @@ export default function DashboardPage() {
         description="Platform overview and system health"
       />
 
-      {error && (
-        <div className="mb-6 px-4 py-3 rounded-md bg-red-50 border border-red-200">
-          <p className="text-sm text-red-700">{error}</p>
+      {isDemo && (
+        <div className="mb-6 px-4 py-3 rounded-md bg-amber-50 border border-amber-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-600" />
+              <p className="text-sm text-amber-700">
+                Backend service unavailable — showing demo data.
+                Start the Kernel service to see live data.
+              </p>
+            </div>
+            <button
+              onClick={fetchStats}
+              className="flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 px-2 py-1 rounded hover:bg-amber-100 transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
@@ -47,28 +81,28 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Active Tenants"
-          value={loading ? '...' : stats?.activeTenants ?? 0}
-          subtitle={loading ? '' : `${stats?.totalTenants ?? 0} total`}
+          value={loading ? '...' : displayStats.activeTenants}
+          subtitle={loading ? '' : `${displayStats.totalTenants} total`}
           icon={<Users className="w-5 h-5" />}
           color="blue"
         />
         <StatCard
           title="Suspended"
-          value={loading ? '...' : stats?.suspendedTenants ?? 0}
+          value={loading ? '...' : displayStats.suspendedTenants}
           subtitle="Tenants paused"
           icon={<Users className="w-5 h-5" />}
           color="amber"
         />
         <StatCard
           title="Active Regions"
-          value={loading ? '...' : stats?.activeRegions ?? 0}
-          subtitle={loading ? '' : `${stats?.totalRegions ?? 0} total`}
+          value={loading ? '...' : displayStats.activeRegions}
+          subtitle={loading ? '' : `${displayStats.totalRegions} total`}
           icon={<Globe className="w-5 h-5" />}
           color="green"
         />
         <StatCard
           title="Datasources"
-          value={loading ? '...' : stats?.totalDatasources ?? 0}
+          value={loading ? '...' : displayStats.totalDatasources}
           subtitle="Connection pools"
           icon={<Database className="w-5 h-5" />}
           color="purple"
@@ -76,11 +110,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Tier Breakdown */}
-      {stats?.tierBreakdown && (
+      {displayStats.tierBreakdown && (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Tenant Tiers</h3>
           <div className="grid grid-cols-3 gap-4">
-            {Object.entries(stats.tierBreakdown).map(([tier, count]) => (
+            {Object.entries(displayStats.tierBreakdown).map(([tier, count]) => (
               <div key={tier} className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-gray-900">{count}</p>
                 <p className="text-sm text-gray-500">{tier}</p>

@@ -64,7 +64,6 @@ public class SchemaValidator {
     /**
      * Recursive validation of a node against schema.
      */
-    @SuppressWarnings("unchecked")
     private void validateNode(JsonNode data, JsonNode schema, String path, List<String> errors) {
         // Check type
         String expectedType = schema.has("type") ? schema.get("type").asText() : null;

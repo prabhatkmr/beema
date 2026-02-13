@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, Clock, Download, Send } from "lucide-react";
+import { useTranslations } from 'next-intl';
+import { useFormatters } from "@/lib/format-utils";
 
 interface BillingDetailProps {
   invoice: {
@@ -12,7 +14,7 @@ interface BillingDetailProps {
     title: string;
     subtitle: string;
     dueDate?: string;
-    amount?: string;
+    amount?: number;
     status: string;
     statusColor: "default" | "secondary" | "destructive" | "outline";
     metadata: string;
@@ -30,14 +32,16 @@ const statusVariantMap: Record<string, "default" | "secondary" | "destructive" |
 const mockPaymentHistory = [
   { date: "Mar 01, 2026", event: "Invoice Created", description: "Invoice generated for policy renewal premium" },
   { date: "Mar 05, 2026", event: "Reminder Sent", description: "Payment reminder email sent to insured" },
-  { date: "Mar 10, 2026", event: "Partial Payment", description: "Received partial payment of $2,500.00" },
+  { date: "Mar 10, 2026", event: "Partial Payment", partialAmount: 2500, description: "Received partial payment" },
   { date: "Mar 15, 2026", event: "Follow-up", description: "Second payment reminder sent for remaining balance" },
 ];
 
 export function BillingDetail({ invoice }: BillingDetailProps) {
+  const t = useTranslations('billing.detail');
+  const { formatCurrency } = useFormatters();
   const badgeVariant = statusVariantMap[invoice.status] ?? invoice.statusColor;
   const dueDate = invoice.dueDate ?? "Mar 31, 2026";
-  const amount = invoice.amount ?? "$5,250.00";
+  const amount = formatCurrency(invoice.amount ?? 5250);
   const isPaid = invoice.status === "Paid";
 
   return (
@@ -56,13 +60,13 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
       {/* Amount Section */}
       <div className="flex items-center justify-between border-b px-6 py-5">
         <div>
-          <p className="text-xs font-medium uppercase text-muted-foreground">Total Amount</p>
+          <p className="text-xs font-medium uppercase text-muted-foreground">{t('totalAmount')}</p>
           <p className="text-3xl font-bold">{amount}</p>
         </div>
         {isPaid ? (
-          <Badge variant="default" className="text-sm px-4 py-1.5">Payment Received</Badge>
+          <Badge variant="default" className="text-sm px-4 py-1.5">{t('paymentReceived')}</Badge>
         ) : (
-          <Button size="lg">Process Payment</Button>
+          <Button size="lg">{t('processPayment')}</Button>
         )}
       </div>
 
@@ -71,12 +75,12 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
         <div className="border-b px-6">
           <TabsList className="h-10">
             <TabsTrigger value="invoice" className="gap-1.5">
-              <FileText className="h-4 w-4" />
-              Invoice
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              {t('invoice')}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5">
-              <Clock className="h-4 w-4" />
-              History
+              <Clock className="h-4 w-4" aria-hidden="true" />
+              {t('history')}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -86,10 +90,10 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
               <FileText className="h-16 w-16 text-muted-foreground/40" />
               <p className="mt-4 text-sm font-medium text-muted-foreground">
-                Invoice Preview
+                {t('invoicePreview')}
               </p>
               <p className="text-xs text-muted-foreground">
-                PDF preview will be rendered here.
+                {t('pdfHint')}
               </p>
             </div>
           </TabsContent>
@@ -100,7 +104,7 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
                 <div key={index} className="relative flex gap-4 pb-8 last:pb-0">
                   {/* Vertical line */}
                   {index < mockPaymentHistory.length - 1 && (
-                    <div className="absolute left-[7px] top-4 h-full w-px bg-border" />
+                    <div className="absolute left-1.75 top-4 h-full w-px bg-border" />
                   )}
                   {/* Dot */}
                   <div className="relative z-10 mt-1.5 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-primary bg-background" />
@@ -108,7 +112,10 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{event.event}</p>
                     <p className="text-xs text-muted-foreground">{event.date}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {event.description}
+                      {event.partialAmount != null && ` of ${formatCurrency(event.partialAmount)}`}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -121,11 +128,11 @@ export function BillingDetail({ invoice }: BillingDetailProps) {
       <div className="flex items-center justify-end gap-3 border-t bg-background px-6 py-3">
         <Button variant="outline" className="gap-1.5">
           <Download className="h-4 w-4" />
-          Download Invoice
+          {t('downloadInvoice')}
         </Button>
         <Button variant="outline" className="gap-1.5">
           <Send className="h-4 w-4" />
-          Send Reminder
+          {t('sendReminder')}
         </Button>
       </div>
     </div>

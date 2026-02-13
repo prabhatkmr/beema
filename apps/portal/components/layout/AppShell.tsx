@@ -43,14 +43,14 @@ export function AppShell({
               aria-label="Go back"
               className="shrink-0"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
             <h1 className="text-xl font-bold tracking-tight">{title}</h1>
           </div>
 
           {/* Middle: Search input */}
           <div className="relative flex-1 max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder={searchPlaceholder}
               onChange={(e) => onSearchChange?.(e.target.value)}

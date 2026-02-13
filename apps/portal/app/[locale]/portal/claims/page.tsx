@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { useTranslations } from 'next-intl';
 import {
   AlertCircle,
   ShieldAlert,
@@ -111,8 +113,8 @@ const newClaimLayout: Layout = {
       fields: [
         { id: "claimType", label: "Claim Type", type: "SELECT", required: true, options: ["Residential Property", "Auto Liability", "General Liability", "Commercial Property", "Personal Property"], placeholder: "Select claim type..." },
         { id: "policyNumber", label: "Policy Number", type: "TEXT", required: true, placeholder: "POL-XXXXX" },
-        { id: "lossDate", label: "Date of Loss", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
-        { id: "reportedDate", label: "Date Reported", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
+        { id: "lossDate", label: "Date of Loss", type: "DATE", required: true, placeholder: "Select date of loss" },
+        { id: "reportedDate", label: "Date Reported", type: "DATE", required: true, placeholder: "Select date reported" },
       ],
     },
     {
@@ -239,6 +241,8 @@ function MultiSelectDropdown({
 
 export default function ClaimsCenterPage() {
   const router = useRouter();
+  const t = useTranslations('claims');
+  const tc = useTranslations('common');
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -324,10 +328,11 @@ export default function ClaimsCenterPage() {
   });
 
   const handleNewClaim = () => {
+    const today = format(new Date(), "yyyy-MM-dd");
     setSelectedClaim(null);
     setIsCreatingClaim(true);
     setCurrentClaimId(`claim-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-    setClaimFormData({});
+    setClaimFormData({ reportedDate: today });
   };
 
   const handleCancelClaim = () => {
@@ -357,8 +362,8 @@ export default function ClaimsCenterPage() {
 
   return (
     <AppShell
-      title="Dashboard"
-      searchPlaceholder="Search claims..."
+      title={tc('backToDashboard')}
+      searchPlaceholder={t('searchPlaceholder')}
       onBack={() => router.push('/portal/dashboard')}
       onSearchChange={setSearchQuery}
       actionSlot={
@@ -367,7 +372,7 @@ export default function ClaimsCenterPage() {
           className="shrink-0 rounded-full gap-1.5"
         >
           <Plus className="h-4 w-4" />
-          + FNOL
+          {t('newClaim')}
         </Button>
       }
     >
@@ -375,22 +380,22 @@ export default function ClaimsCenterPage() {
         {/* Filter Bar */}
         <div className="border-b bg-muted/30 px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+            <span className="text-sm font-medium text-muted-foreground">{tc('filters')}</span>
 
             <MultiSelectDropdown
-              label="Statuses"
+              label={t('allStatuses')}
               options={uniqueStatuses}
               selected={statusFilter}
               onChange={setStatusFilter}
-              ariaLabel="Filter by status"
+              ariaLabel={t('filterByStatus')}
             />
 
             <MultiSelectDropdown
-              label="Claim Types"
+              label={t('allTypes')}
               options={uniqueClaimTypes}
               selected={claimTypeFilter}
               onChange={setClaimTypeFilter}
-              ariaLabel="Filter by claim type"
+              ariaLabel={t('filterByType')}
             />
 
             {(statusFilter.length > 0 || claimTypeFilter.length > 0) && (
@@ -401,28 +406,28 @@ export default function ClaimsCenterPage() {
                 }}
                 className="text-sm text-blue-600 hover:text-blue-700 underline"
               >
-                Clear all filters
+                {tc('clearAllFilters')}
               </button>
             )}
 
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
+              <span className="text-sm font-medium text-muted-foreground">{tc('sortBy')}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-1.5 text-sm border rounded-md bg-background focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                aria-label="Sort claims"
+                aria-label={t('sortClaims')}
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="status">Status</option>
+                <option value="newest">{tc('sort.newest')}</option>
+                <option value="oldest">{tc('sort.oldest')}</option>
+                <option value="name-asc">{tc('sort.nameAsc')}</option>
+                <option value="name-desc">{tc('sort.nameDesc')}</option>
+                <option value="status">{tc('sort.status')}</option>
               </select>
             </div>
 
-            <span className="text-sm text-muted-foreground">
-              {filteredClaims.length} {filteredClaims.length === 1 ? 'claim' : 'claims'}
+            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+              {t('count', { count: filteredClaims.length })}
             </span>
           </div>
         </div>
@@ -437,7 +442,7 @@ export default function ClaimsCenterPage() {
             <aside className="col-span-4 overflow-y-auto border-r relative">
             {filteredClaims.length === 0 ? (
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                No claims found
+                {t('noResults')}
               </div>
             ) : (
               filteredClaims.map((claim) => (
@@ -457,8 +462,8 @@ export default function ClaimsCenterPage() {
             <button
               onClick={() => setIsSidebarCollapsed(true)}
               className="absolute top-1/2 -translate-y-1/2 -right-3 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
+              aria-label={tc('collapseSidebar')}
+              title={tc('collapseSidebar')}
             >
               <ChevronLeft className="h-5 w-5 text-blue-600" />
             </button>
@@ -474,8 +479,8 @@ export default function ClaimsCenterPage() {
               <button
                 onClick={() => setIsSidebarCollapsed(false)}
                 className="fixed top-1/2 -translate-y-1/2 left-0 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-                aria-label="Expand sidebar"
-                title="Expand sidebar"
+                aria-label={tc('expandSidebar')}
+                title={tc('expandSidebar')}
               >
                 <ChevronRight className="h-5 w-5 text-blue-600" />
               </button>
@@ -484,9 +489,9 @@ export default function ClaimsCenterPage() {
               <>
                 <div className="border-b px-6 py-4 flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-bold">New Claim (FNOL)</h2>
+                    <h2 className="text-lg font-bold">{t('fnolTitle')}</h2>
                     <p className="text-sm text-muted-foreground">
-                      First Notice of Loss - Create a new claim
+                      {t('fnolSubtitle')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -496,7 +501,7 @@ export default function ClaimsCenterPage() {
                       onClick={handleCancelClaim}
                     >
                       <X className="h-4 w-4 mr-1" />
-                      Cancel
+                      {tc('cancel')}
                     </Button>
                   </div>
                 </div>
@@ -513,7 +518,7 @@ export default function ClaimsCenterPage() {
                 </div>
                 <div className="border-t px-6 py-4">
                   <Button onClick={handleSubmitClaim} className="w-full">
-                    Submit Claim
+                    {t('submitClaim')}
                   </Button>
                 </div>
               </>
@@ -524,7 +529,7 @@ export default function ClaimsCenterPage() {
                 <div className="text-center">
                   <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground/50" />
                   <p className="mt-3 text-sm font-medium text-muted-foreground">
-                    Select a claim to view details
+                    {t('selectClaim')}
                   </p>
                 </div>
               </div>
@@ -536,7 +541,7 @@ export default function ClaimsCenterPage() {
       {/* Back to Dashboard Button */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
         <Button onClick={() => router.push('/portal/dashboard')} variant="outline" className="shadow-lg">
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Button>
       </div>
     </AppShell>

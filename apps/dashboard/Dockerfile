@@ -1,33 +1,27 @@
-# Stage 1: Dependencies
-FROM node:20-alpine AS deps
+# Stage 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copy root package files
-COPY package.json pnpm-lock.yaml* ./
-COPY apps/dashboard/package.json ./apps/dashboard/
 
 # Install pnpm
 RUN npm install -g pnpm
 
-# Install dependencies
+# Copy workspace config and package files (for dependency caching)
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY apps/dashboard/package.json ./apps/dashboard/
+COPY packages/ui/package.json ./packages/ui/
+
+# Install dependencies (no cross-stage COPY preserves pnpm symlinks)
 RUN pnpm install --frozen-lockfile
 
-# Stage 2: Builder
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/dashboard/node_modules ./apps/dashboard/node_modules
-
-# Copy application code
+# Copy application source code
+COPY tsconfig.json ./
 COPY apps/dashboard ./apps/dashboard
 COPY packages ./packages
 COPY turbo.json ./
 
 # Build the application
 WORKDIR /app/apps/dashboard
-RUN npm run build
+RUN pnpm run build
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runtime
@@ -40,7 +34,6 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy built application
 COPY --from=builder /app/apps/dashboard/.next/standalone ./
 COPY --from=builder /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
-COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
 
 # Set ownership
 RUN chown -R nextjs:nodejs /app

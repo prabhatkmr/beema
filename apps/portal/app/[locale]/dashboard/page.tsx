@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   FileText,
@@ -10,6 +13,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const t = useTranslations('legacyDashboard');
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -17,8 +21,8 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Beema Portal</h1>
-              <p className="text-sm text-gray-600">Insurance Management System</p>
+              <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+              <p className="text-sm text-gray-600">{t('subtitle')}</p>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-700">Jane Underwriter</span>
@@ -34,8 +38,8 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h2>
-          <p className="text-gray-600">Manage your insurance policies, claims, and submissions</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('heading')}</h2>
+          <p className="text-gray-600">{t('description')}</p>
         </div>
 
         {/* Navigation Cards Grid */}
@@ -44,8 +48,8 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/policies"
             icon={<FileText className="w-8 h-8" />}
-            title="Policies"
-            description="View and manage your insurance policies"
+            title={t('policies')}
+            description={t('policiesDesc')}
             color="blue"
             stats="5 Active"
           />
@@ -54,8 +58,8 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/claims"
             icon={<AlertCircle className="w-8 h-8" />}
-            title="Claims"
-            description="Submit and track insurance claims"
+            title={t('claims')}
+            description={t('claimsDesc')}
             color="red"
             stats="2 Pending"
           />
@@ -64,8 +68,8 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/submissions"
             icon={<Send className="w-8 h-8" />}
-            title="Submissions"
-            description="New policy submissions and quotes"
+            title={t('submissions')}
+            description={t('submissionsDesc')}
             color="green"
             stats="3 In Review"
           />
@@ -74,8 +78,8 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/profile"
             icon={<User className="w-8 h-8" />}
-            title="Profile"
-            description="Manage your account and preferences"
+            title={t('profile')}
+            description={t('profileDesc')}
             color="purple"
           />
 
@@ -83,8 +87,8 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/analytics"
             icon={<BarChart3 className="w-8 h-8" />}
-            title="Analytics"
-            description="View reports and insights"
+            title={t('analytics')}
+            description={t('analyticsDesc')}
             color="yellow"
           />
 
@@ -92,18 +96,18 @@ export default function DashboardPage() {
           <DashboardCard
             href="/dashboard/settings"
             icon={<Settings className="w-8 h-8" />}
-            title="Settings"
-            description="Configure system preferences"
+            title={t('settings')}
+            description={t('settingsDesc')}
             color="gray"
           />
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard title="Total Policies" value="23" trend="+2 this month" />
-          <StatCard title="Active Claims" value="7" trend="3 resolved" />
-          <StatCard title="Premium Volume" value="$248K" trend="+12% YoY" />
-          <StatCard title="Pending Reviews" value="5" trend="2 urgent" />
+          <StatCard title={t('totalPolicies')} value="23" trend="+2 this month" />
+          <StatCard title={t('activeClaims')} value="7" trend="3 resolved" />
+          <StatCard title={t('premiumVolume')} value="$248K" trend="+12% YoY" />
+          <StatCard title={t('pendingReviews')} value="5" trend="2 urgent" />
         </div>
       </main>
     </div>
@@ -138,13 +142,13 @@ function DashboardCard({
   return (
     <Link
       href={href}
-      className={`block p-6 rounded-xl bg-gradient-to-br ${colorClasses[color]} text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1`}
+      className={`block p-6 rounded-xl bg-linear-to-br ${colorClasses[color]} text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
           {icon}
         </div>
-        <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </div>

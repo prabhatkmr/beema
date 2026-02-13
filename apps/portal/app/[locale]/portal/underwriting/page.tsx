@@ -1,20 +1,23 @@
 'use client';
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { ClipboardCheck, FileCheck, Shield, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function UnderwritingPage() {
   const router = useRouter();
+  const t = useTranslations('underwriting');
+  const tc = useTranslations('common');
 
   return (
     <div className="space-y-10">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Beema Underwriting Workbench
+          {t('title')}
         </h2>
         <p className="text-sm text-muted-foreground">
-          Comprehensive risk evaluation and policy decisioning
+          {t('subtitle')}
         </p>
       </div>
 
@@ -25,19 +28,18 @@ export default function UnderwritingPage() {
             <ClipboardCheck className="h-12 w-12" />
           </div>
           <div>
-            <h3 className="text-3xl font-bold">Underwriting Workbench</h3>
-            <p className="text-amber-100">Intelligent Risk Assessment Platform</p>
+            <h3 className="text-3xl font-bold">{t('heroTitle')}</h3>
+            <p className="text-amber-100">{t('heroSubtitle')}</p>
           </div>
         </div>
         <p className="text-lg text-amber-50 max-w-2xl">
-          Streamline your underwriting process with AI-powered risk analysis, automated
-          referrals, and comprehensive decision support tools for accurate policy evaluation.
+          {t('heroDescription')}
         </p>
       </div>
 
       {/* Features Grid */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Core Capabilities</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('coreCapabilities')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -45,9 +47,9 @@ export default function UnderwritingPage() {
                 <FileCheck className="h-6 w-6 text-green-600" />
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Automated Risk Assessment</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">{t('automatedRisk')}</h4>
             <p className="text-sm text-gray-600">
-              AI-driven risk scoring and classification with real-time data validation and fraud detection
+              {t('automatedRiskDesc')}
             </p>
           </div>
 
@@ -57,9 +59,9 @@ export default function UnderwritingPage() {
                 <Shield className="h-6 w-6 text-blue-600" />
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Policy Decisioning</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">{t('policyDecisioning')}</h4>
             <p className="text-sm text-gray-600">
-              Comprehensive workflows for accept, decline, or refer decisions with audit trails
+              {t('policyDecisioningDesc')}
             </p>
           </div>
 
@@ -69,9 +71,9 @@ export default function UnderwritingPage() {
                 <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Referral Management</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">{t('referralMgmt')}</h4>
             <p className="text-sm text-gray-600">
-              Smart routing and queue management for cases requiring senior underwriter review
+              {t('referralMgmtDesc')}
             </p>
           </div>
         </div>
@@ -80,17 +82,17 @@ export default function UnderwritingPage() {
       {/* Coming Soon Section */}
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-8 text-center">
         <p className="text-lg font-medium text-gray-900 mb-2">
-          Full underwriting workbench launching soon
+          {t('comingSoonTitle')}
         </p>
         <p className="text-sm text-muted-foreground">
-          Empowering underwriters with cutting-edge tools for faster, more accurate decisions
+          {t('comingSoonDesc')}
         </p>
       </div>
 
       {/* Back to Dashboard Button */}
       <div className="flex justify-center">
         <Button onClick={() => router.push('/portal/dashboard')} variant="outline">
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Button>
       </div>
     </div>

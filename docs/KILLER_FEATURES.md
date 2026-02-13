@@ -349,6 +349,78 @@ To make this feel like an iPhone, your Frontend Router (React/Vue) needs to hand
 
 ---
 
+## Feature #5: Workflow Orchestration (The Time Engine)
+
+### The Problem
+
+Insurance processes are long-running state machines (e.g., "Wait for Police Report," "Manager Approval").
+
+**The Guidewire Limitation:** Workflow engines are often proprietary, heavy, and difficult to test or version control.
+
+### Architecture Strategy
+
+We use **Temporal** as the state engine, but we need a **"Bridge"** for human interaction. Temporal handles the "Wait," and our Postgres DB handles the "UI Inbox."
+
+### Database Schema
+
+```sql
+CREATE TABLE sys_tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES sys_tenants(id),
+    
+    -- Link to the Business Object
+    object_id UUID REFERENCES sys_objects(id),
+    
+    -- Link to Temporal (The Bridge)
+    workflow_id VARCHAR(255) NOT NULL,
+    run_id VARCHAR(255) NOT NULL,
+    signal_name VARCHAR(255) DEFAULT 'HumanApproval',
+
+    -- Task Details
+    assignee_role VARCHAR(50), -- "MANAGER"
+    status VARCHAR(20) DEFAULT 'OPEN', -- 'OPEN', 'COMPLETED'
+    outcome VARCHAR(50), -- 'APPROVED', 'REJECTED'
+    
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Java Implementation (The Bridge)
+
+**TaskService.java**
+
+```java
+@Service
+@RequiredArgsConstructor
+public class TaskService {
+
+    private final WorkflowClient temporalClient;
+    private final TaskRepository taskRepo;
+
+    /**
+     * Called by the UI when a user clicks "Approve"
+     */
+    public void completeTask(UUID taskId, String outcome) {
+        // 1. Update the Database (Clear the Inbox)
+        SysTask task = taskRepo.findById(taskId).orElseThrow();
+        task.setStatus("COMPLETED");
+        task.setOutcome(outcome);
+        taskRepo.save(task);
+
+        // 2. Signal Temporal (Wake up the Workflow)
+        // This bridges the gap between the synchronous UI and async Workflow
+        WorkflowStub workflow = temporalClient.newWorkflowStub(
+            task.getWorkflowId(), 
+            Optional.of(task.getRunId())
+        );
+        
+        workflow.signal(task.getSignalName(), outcome);
+    }
+}
+```
+
+---
+
 ## Final Architecture Summary (The "OS" Vision)
 
 You have now assembled a complete, next-generation Insurance Platform architecture.
@@ -364,6 +436,7 @@ You have now assembled a complete, next-generation Insurance Platform architectu
 - **Product Patterns**: `sys_patterns` to configure products per line of business
 - **Virtual Fields**: `sys_formulas` for runtime calculations
 - **Webhooks**: `sys_webhooks` for "No-Code" integration
+- **Workflows**: **Temporal** + `sys_tasks` for long-running orchestration
 
 ### The Experience (Presentation)
 

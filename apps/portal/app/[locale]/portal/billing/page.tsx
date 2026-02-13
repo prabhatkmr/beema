@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import {
   CreditCard,
   Receipt,
@@ -20,6 +21,7 @@ import { FeedCard } from "@/components/layout/FeedCard";
 import { Button } from "@/components/ui/button";
 import { BillingDetail } from "@/components/billing/BillingDetail";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format-utils";
 
 interface Invoice {
   id: string;
@@ -30,7 +32,7 @@ interface Invoice {
   metadata: string;
   icon: LucideIcon;
   dueDate: string;
-  amount: string;
+  amount: number;
 }
 
 const mockInvoices: Invoice[] = [
@@ -43,7 +45,7 @@ const mockInvoices: Invoice[] = [
     metadata: "Due: 15 Mar 2026",
     icon: CheckCircle2,
     dueDate: "Mar 15, 2026",
-    amount: "$12,500.00",
+    amount: 12500,
   },
   {
     id: "INV-2024-02",
@@ -54,7 +56,7 @@ const mockInvoices: Invoice[] = [
     metadata: "Due: 01 Apr 2026",
     icon: Clock,
     dueDate: "Apr 01, 2026",
-    amount: "$3,125.00",
+    amount: 3125,
   },
   {
     id: "INV-2024-03",
@@ -65,7 +67,7 @@ const mockInvoices: Invoice[] = [
     metadata: "Due: 20 Feb 2026",
     icon: AlertTriangle,
     dueDate: "Feb 20, 2026",
-    amount: "$150.00",
+    amount: 150,
   },
   {
     id: "INV-2024-04",
@@ -76,7 +78,7 @@ const mockInvoices: Invoice[] = [
     metadata: "Due: 01 Mar 2026",
     icon: CheckCircle2,
     dueDate: "Mar 01, 2026",
-    amount: "$3,125.00",
+    amount: 3125,
   },
   {
     id: "INV-2024-05",
@@ -87,7 +89,7 @@ const mockInvoices: Invoice[] = [
     metadata: "Due: 15 Apr 2026",
     icon: Clock,
     dueDate: "Apr 15, 2026",
-    amount: "$8,750.00",
+    amount: 8750,
   },
 ];
 
@@ -190,6 +192,9 @@ function MultiSelectDropdown({
 
 export default function BillingCenterPage() {
   const router = useRouter();
+  const t = useTranslations('billing');
+  const tc = useTranslations('common');
+  const { formatCurrency } = useFormatters();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -234,8 +239,8 @@ export default function BillingCenterPage() {
 
   return (
     <AppShell
-      title="Dashboard"
-      searchPlaceholder="Search invoices..."
+      title={tc('backToDashboard')}
+      searchPlaceholder={t('searchPlaceholder')}
       onBack={() => router.push('/portal/dashboard')}
       onSearchChange={setSearchQuery}
       actionSlot={
@@ -244,7 +249,7 @@ export default function BillingCenterPage() {
           className="shrink-0 rounded-full gap-1.5"
         >
           <Plus className="h-4 w-4" />
-          + New Invoice
+          {t('newInvoice')}
         </Button>
       }
     >
@@ -252,22 +257,22 @@ export default function BillingCenterPage() {
         {/* Filter Bar */}
         <div className="border-b bg-muted/30 px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+            <span className="text-sm font-medium text-muted-foreground">{tc('filters')}</span>
 
             <MultiSelectDropdown
-              label="Statuses"
+              label={t('allStatuses')}
               options={uniqueStatuses}
               selected={statusFilter}
               onChange={setStatusFilter}
-              ariaLabel="Filter by status"
+              ariaLabel={t('filterByStatus')}
             />
 
             <MultiSelectDropdown
-              label="Products"
+              label={t('allProducts')}
               options={uniqueProducts}
               selected={productFilter}
               onChange={setProductFilter}
-              ariaLabel="Filter by product"
+              ariaLabel={t('filterByProduct')}
             />
 
             {(statusFilter.length > 0 || productFilter.length > 0) && (
@@ -278,28 +283,28 @@ export default function BillingCenterPage() {
                 }}
                 className="text-sm text-blue-600 hover:text-blue-700 underline"
               >
-                Clear all filters
+                {tc('clearAllFilters')}
               </button>
             )}
 
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
+              <span className="text-sm font-medium text-muted-foreground">{tc('sortBy')}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-1.5 text-sm border rounded-md bg-background focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                aria-label="Sort invoices"
+                aria-label={t('sortInvoices')}
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="status">Status</option>
+                <option value="newest">{tc('sort.newest')}</option>
+                <option value="oldest">{tc('sort.oldest')}</option>
+                <option value="name-asc">{tc('sort.nameAsc')}</option>
+                <option value="name-desc">{tc('sort.nameDesc')}</option>
+                <option value="status">{tc('sort.status')}</option>
               </select>
             </div>
 
-            <span className="text-sm text-muted-foreground">
-              {filteredInvoices.length} {filteredInvoices.length === 1 ? 'invoice' : 'invoices'}
+            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+              {t('count', { count: filteredInvoices.length })}
             </span>
           </div>
         </div>
@@ -311,7 +316,7 @@ export default function BillingCenterPage() {
             <aside className="col-span-4 overflow-y-auto border-r relative">
             {filteredInvoices.length === 0 ? (
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                No invoices found
+                {t('noResults')}
               </div>
             ) : (
               filteredInvoices.map((invoice) => (
@@ -331,8 +336,8 @@ export default function BillingCenterPage() {
             <button
               onClick={() => setIsSidebarCollapsed(true)}
               className="absolute top-1/2 -translate-y-1/2 -right-3 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
+              aria-label={tc('collapseSidebar')}
+              title={tc('collapseSidebar')}
             >
               <ChevronLeft className="h-5 w-5 text-blue-600" />
             </button>
@@ -348,8 +353,8 @@ export default function BillingCenterPage() {
               <button
                 onClick={() => setIsSidebarCollapsed(false)}
                 className="fixed top-1/2 -translate-y-1/2 left-0 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-                aria-label="Expand sidebar"
-                title="Expand sidebar"
+                aria-label={tc('expandSidebar')}
+                title={tc('expandSidebar')}
               >
                 <ChevronRight className="h-5 w-5 text-blue-600" />
               </button>
@@ -361,7 +366,7 @@ export default function BillingCenterPage() {
                 <div className="text-center">
                   <CreditCard className="mx-auto h-12 w-12 text-muted-foreground/50" />
                   <p className="mt-3 text-sm font-medium text-muted-foreground">
-                    Select an invoice to view details
+                    {t('selectInvoice')}
                   </p>
                 </div>
               </div>
@@ -373,7 +378,7 @@ export default function BillingCenterPage() {
       {/* Back to Dashboard Button */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
         <Button onClick={() => router.push('/portal/dashboard')} variant="outline" className="shadow-lg">
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Button>
       </div>
     </AppShell>

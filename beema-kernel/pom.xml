@@ -176,6 +176,13 @@
             <version>1.20.0</version>
         </dependency>
 
+        <!-- Protobuf: Temporal SDK needs 3.x (GeneratedMessageV3), but Hadoop pulls 2.5.0 which lacks it -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.1</version>
+        </dependency>
+
         <!-- Lombok (optional, for reducing boilerplate) -->
         <dependency>
             <groupId>org.projectlombok</groupId>

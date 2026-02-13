@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { format, addYears } from "date-fns";
+import { useTranslations } from 'next-intl';
+import { toast } from "sonner";
 import {
   ScrollText,
   FileText,
@@ -139,8 +142,8 @@ const newQuoteLayout: Layout = {
       fields: [
         { id: "product", label: "Product", type: "SELECT", required: true, options: ["Commercial Property", "Professional Indemnity", "Cyber Liability", "Directors & Officers", "Marine Cargo", "Employers Liability"], placeholder: "Select product..." },
         { id: "lineOfBusiness", label: "Line of Business", type: "SELECT", required: true, options: ["Retail", "Commercial", "London Market"], placeholder: "Select line..." },
-        { id: "effectiveDate", label: "Effective Date", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
-        { id: "expiryDate", label: "Expiry Date", type: "TEXT", required: true, placeholder: "DD/MM/YYYY" },
+        { id: "effectiveDate", label: "Effective Date", type: "DATE", required: true, placeholder: "Select effective date" },
+        { id: "expiryDate", label: "Expiry Date", type: "DATE", required: true, placeholder: "Select expiry date" },
       ],
     },
     {
@@ -267,6 +270,8 @@ function MultiSelectDropdown({
 
 export default function PolicyCenterPage() {
   const router = useRouter();
+  const t = useTranslations('policy');
+  const tc = useTranslations('common');
   const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -354,12 +359,14 @@ export default function PolicyCenterPage() {
   });
 
   const handleNewQuote = () => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const oneYearLater = format(addYears(new Date(), 1), "yyyy-MM-dd");
     setSelectedPolicy(null);
     setIsCreatingQuote(true);
     setQuoteCount(1);
     setCurrentQuoteId(`quote-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-    setQuote1FormData({});
-    setQuote2FormData({});
+    setQuote1FormData({ effectiveDate: today, expiryDate: oneYearLater });
+    setQuote2FormData({ effectiveDate: today, expiryDate: oneYearLater });
   };
 
   const handleCancelQuote = () => {
@@ -370,12 +377,43 @@ export default function PolicyCenterPage() {
     setQuote2FormData({});
   };
 
-  const handleSubmitQuote = () => {
-    if (quoteCount === 1) {
-      console.log("Submitting quote 1:", quote1FormData);
-    } else {
-      console.log("Submitting quote 1:", quote1FormData);
-      console.log("Submitting quote 2:", quote2FormData);
+  const handleSubmitQuote = async () => {
+    const formsToSubmit = quoteCount === 1
+      ? [quote1FormData]
+      : [quote1FormData, quote2FormData];
+
+    for (const formData of formsToSubmit) {
+      const product = formData.product || "general";
+      try {
+        const response = await fetch("/api/kernel/submissions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Tenant-ID": "default-tenant",
+          },
+          body: JSON.stringify({ product, data: formData }),
+        });
+
+        if (!response.ok) {
+          let message = "Submission failed";
+          try {
+            const errorBody = await response.json();
+            message = errorBody.message || message;
+          } catch {
+            // not JSON
+          }
+          toast.error(message);
+          return;
+        }
+
+        const result = await response.json();
+        toast.success("Quote Started!", {
+          description: `Submission ID: ${result.submissionId}`,
+        });
+      } catch (err) {
+        toast.error("Failed to connect to server");
+        return;
+      }
     }
 
     // Remove from quotes in progress after successful submission
@@ -383,7 +421,6 @@ export default function PolicyCenterPage() {
       removeQuoteInProgress(currentQuoteId);
     }
 
-    // TODO: Implement actual quote submission
     setIsCreatingQuote(false);
     setCurrentQuoteId(null);
     setQuote1FormData({});
@@ -400,8 +437,8 @@ export default function PolicyCenterPage() {
 
   return (
     <AppShell
-      title="Dashboard"
-      searchPlaceholder="Search policies..."
+      title={tc('backToDashboard')}
+      searchPlaceholder={t('searchPlaceholder')}
       onBack={() => router.push('/portal/dashboard')}
       onSearchChange={setSearchQuery}
       actionSlot={
@@ -410,7 +447,7 @@ export default function PolicyCenterPage() {
           className="shrink-0 rounded-full gap-1.5"
         >
           <Plus className="h-4 w-4" />
-          + New Quote
+          {t('newQuote')}
         </Button>
       }
     >
@@ -418,22 +455,22 @@ export default function PolicyCenterPage() {
         {/* Filter Bar */}
         <div className="border-b bg-muted/30 px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+            <span className="text-sm font-medium text-muted-foreground">{tc('filters')}</span>
 
             <MultiSelectDropdown
-              label="Statuses"
+              label={t('allStatuses')}
               options={uniqueStatuses}
               selected={statusFilter}
               onChange={setStatusFilter}
-              ariaLabel="Filter by status"
+              ariaLabel={t('filterByStatus')}
             />
 
             <MultiSelectDropdown
-              label="Lines of Business"
+              label={t('allLines')}
               options={uniqueLinesOfBusiness}
               selected={lineOfBusinessFilter}
               onChange={setLineOfBusinessFilter}
-              ariaLabel="Filter by line of business"
+              ariaLabel={t('filterByLine')}
             />
 
             {(statusFilter.length > 0 || lineOfBusinessFilter.length > 0) && (
@@ -444,28 +481,28 @@ export default function PolicyCenterPage() {
                 }}
                 className="text-sm text-blue-600 hover:text-blue-700 underline"
               >
-                Clear all filters
+                {tc('clearAllFilters')}
               </button>
             )}
 
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
+              <span className="text-sm font-medium text-muted-foreground">{tc('sortBy')}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-1.5 text-sm border rounded-md bg-background focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                aria-label="Sort policies"
+                aria-label={t('sortPolicies')}
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="status">Status</option>
+                <option value="newest">{tc('sort.newest')}</option>
+                <option value="oldest">{tc('sort.oldest')}</option>
+                <option value="name-asc">{tc('sort.nameAsc')}</option>
+                <option value="name-desc">{tc('sort.nameDesc')}</option>
+                <option value="status">{tc('sort.status')}</option>
               </select>
             </div>
 
-            <span className="text-sm text-muted-foreground">
-              {filteredPolicies.length} {filteredPolicies.length === 1 ? 'policy' : 'policies'}
+            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+              {t('count', { count: filteredPolicies.length })}
             </span>
           </div>
         </div>
@@ -480,7 +517,7 @@ export default function PolicyCenterPage() {
             <aside className="col-span-4 overflow-y-auto border-r relative">
               {filteredPolicies.length === 0 ? (
                 <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                  No policies found
+                  {t('noResults')}
                 </div>
               ) : (
                 filteredPolicies.map((policy) => (
@@ -502,8 +539,8 @@ export default function PolicyCenterPage() {
               <button
                 onClick={() => setIsSidebarCollapsed(true)}
                 className="absolute top-1/2 -translate-y-1/2 -right-3 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-                aria-label="Collapse sidebar"
-                title="Collapse sidebar"
+                aria-label={tc('collapseSidebar')}
+                title={tc('collapseSidebar')}
               >
                 <ChevronLeft className="h-5 w-5 text-blue-600" />
               </button>
@@ -519,8 +556,8 @@ export default function PolicyCenterPage() {
             <button
               onClick={() => setIsSidebarCollapsed(false)}
               className="fixed top-1/2 -translate-y-1/2 left-0 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
-              aria-label="Expand sidebar"
-              title="Expand sidebar"
+              aria-label={tc('expandSidebar')}
+              title={tc('expandSidebar')}
             >
               <ChevronRight className="h-5 w-5 text-blue-600" />
             </button>
@@ -529,9 +566,9 @@ export default function PolicyCenterPage() {
             <>
               <div className="border-b px-6 py-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold">New Quote{quoteCount === 2 ? ' Comparison' : ''}</h2>
+                  <h2 className="text-lg font-bold">{quoteCount === 2 ? t('newQuoteComparison') : t('newQuoteTitle')}</h2>
                   <p className="text-sm text-muted-foreground">
-                    {quoteCount === 2 ? 'Create and compare two quote scenarios' : 'Create a new policy quote'}
+                    {quoteCount === 2 ? t('compareQuotes') : t('createQuote')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -542,7 +579,7 @@ export default function PolicyCenterPage() {
                       onClick={() => setQuoteCount(1)}
                       className="h-7 px-3 text-xs"
                     >
-                      Single Quote
+                      {t('singleQuote')}
                     </Button>
                     <Button
                       variant={quoteCount === 2 ? "default" : "ghost"}
@@ -550,7 +587,7 @@ export default function PolicyCenterPage() {
                       onClick={() => setQuoteCount(2)}
                       className="h-7 px-3 text-xs"
                     >
-                      Compare (2)
+                      {t('compareTwo')}
                     </Button>
                   </div>
                   <Button
@@ -559,7 +596,7 @@ export default function PolicyCenterPage() {
                     onClick={handleCancelQuote}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Cancel
+                    {tc('cancel')}
                   </Button>
                 </div>
               </div>
@@ -572,7 +609,7 @@ export default function PolicyCenterPage() {
                   <div className="flex flex-col h-full border-r">
                     {quoteCount === 2 && (
                       <div className="border-b px-4 py-2 bg-muted/30">
-                        <h3 className="text-sm font-semibold">Quote Option A</h3>
+                        <h3 className="text-sm font-semibold">{t('quoteOptionA')}</h3>
                       </div>
                     )}
                     <ScrollArea className="flex-1 px-6">
@@ -590,7 +627,7 @@ export default function PolicyCenterPage() {
                   {quoteCount === 2 && (
                     <div className="flex flex-col h-full">
                       <div className="border-b px-4 py-2 bg-muted/30">
-                        <h3 className="text-sm font-semibold">Quote Option B</h3>
+                        <h3 className="text-sm font-semibold">{t('quoteOptionB')}</h3>
                       </div>
                       <ScrollArea className="flex-1 px-6">
                         <div className="py-4">
@@ -607,7 +644,7 @@ export default function PolicyCenterPage() {
               </div>
               <div className="border-t px-6 py-4">
                 <Button onClick={handleSubmitQuote} className="w-full">
-                  Submit {quoteCount === 2 ? 'Both Quotes' : 'Quote'}
+                  {quoteCount === 2 ? t('submitBothQuotes') : t('submitQuote')}
                 </Button>
               </div>
             </>
@@ -618,7 +655,7 @@ export default function PolicyCenterPage() {
               <div className="text-center">
                 <ScrollText className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <p className="mt-3 text-sm font-medium text-muted-foreground">
-                  Select an item to view details
+                  {tc('selectItem')}
                 </p>
               </div>
             </div>
@@ -630,7 +667,7 @@ export default function PolicyCenterPage() {
       {/* Back to Dashboard Button */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
         <Button onClick={() => router.push('/portal/dashboard')} variant="outline" className="shadow-lg">
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Button>
       </div>
     </AppShell>

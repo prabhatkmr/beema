@@ -32,6 +32,7 @@ export function FeedCard({
     <div
       role="button"
       tabIndex={0}
+      aria-label={`${title}${status ? `, ${status}` : ''}`}
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -67,7 +68,7 @@ export function FeedCard({
             {status}
           </Badge>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </div>
     </div>
   );

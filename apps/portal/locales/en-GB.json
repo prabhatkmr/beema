@@ -2,7 +2,15 @@
   "dashboard": {
     "greeting": "Good Morning, {name}",
     "welcome": "Welcome to your Beema workspace",
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "quickAccess": "Quick Access",
+    "stats": {
+      "totalPremium": "Total Premium Volume",
+      "activePolicies": "Active Policies",
+      "lastUpdated": "Last Updated",
+      "new": "{count} new",
+      "today": "Today"
+    }
   },
   "apps": {
     "policy": {
@@ -54,6 +62,11 @@
       "title": "Settings",
       "description": "System settings",
       "pending": "{count} pending"
+    },
+    "submissions": {
+      "title": "Submissions",
+      "description": "Quotes and policy submissions",
+      "pending": "{count} pending"
     }
   },
   "common": {
@@ -67,6 +80,287 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "submit": "Submit",
+    "retry": "Retry",
+    "backToDashboard": "Back to Dashboard",
+    "goBack": "Go back",
+    "comingSoon": "Coming soon...",
+    "noResults": "No results found",
+    "selectItem": "Select an item to view details",
+    "filters": "Filters:",
+    "sortBy": "Sort by:",
+    "clearAllFilters": "Clear all filters",
+    "selected": "{count} selected",
+    "allLabel": "All {label}",
+    "sort": {
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "status": "Status"
+    },
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
+  },
+  "policy": {
+    "title": "Policies",
+    "searchPlaceholder": "Search policies...",
+    "newQuote": "+ New Quote",
+    "allStatuses": "Statuses",
+    "allLines": "Lines of Business",
+    "filterByStatus": "Filter by status",
+    "filterByLine": "Filter by line of business",
+    "sortPolicies": "Sort policies",
+    "count": "{count} {count, plural, one {policy} other {policies}}",
+    "noResults": "No policies found",
+    "newQuoteTitle": "New Quote",
+    "newQuoteComparison": "New Quote Comparison",
+    "createQuote": "Create a new policy quote",
+    "compareQuotes": "Create and compare two quote scenarios",
+    "singleQuote": "Single Quote",
+    "compareTwo": "Compare (2)",
+    "quoteOptionA": "Quote Option A",
+    "quoteOptionB": "Quote Option B",
+    "submitQuote": "Submit Quote",
+    "submitBothQuotes": "Submit Both Quotes",
+    "detail": {
+      "overview": "Overview",
+      "timeline": "Timeline",
+      "documents": "Documents",
+      "noDocuments": "No documents",
+      "documentsHint": "Documents will appear here once uploaded.",
+      "endorse": "Endorse",
+      "cancelPolicy": "Cancel Policy"
+    }
+  },
+  "claims": {
+    "title": "Claims",
+    "searchPlaceholder": "Search claims...",
+    "newClaim": "+ FNOL",
+    "allStatuses": "Statuses",
+    "allTypes": "Claim Types",
+    "filterByStatus": "Filter by status",
+    "filterByType": "Filter by claim type",
+    "sortClaims": "Sort claims",
+    "count": "{count} {count, plural, one {claim} other {claims}}",
+    "noResults": "No claims found",
+    "fnolTitle": "New Claim (FNOL)",
+    "fnolSubtitle": "First Notice of Loss - Create a new claim",
+    "submitClaim": "Submit Claim",
+    "selectClaim": "Select a claim to view details",
+    "detail": {
+      "overview": "Overview",
+      "financials": "Financials",
+      "notes": "Notes",
+      "reserve": "Reserve",
+      "paid": "Paid",
+      "lossDescription": "Loss Description",
+      "claimDetails": "Claim Details",
+      "claimType": "Claim Type:",
+      "policy": "Policy:",
+      "adjuster": "Adjuster:",
+      "dateReported": "Date Reported:",
+      "noNotes": "No notes",
+      "notesHint": "Notes and comments will appear here once added.",
+      "addPayment": "Add Payment",
+      "closeClaim": "Close Claim"
+    },
+    "financials": {
+      "date": "Date",
+      "description": "Description",
+      "type": "Type",
+      "amount": "Amount"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "searchPlaceholder": "Search invoices...",
+    "newInvoice": "+ New Invoice",
+    "allStatuses": "Statuses",
+    "allProducts": "Products",
+    "filterByStatus": "Filter by status",
+    "filterByProduct": "Filter by product",
+    "sortInvoices": "Sort invoices",
+    "count": "{count} {count, plural, one {invoice} other {invoices}}",
+    "noResults": "No invoices found",
+    "selectInvoice": "Select an invoice to view details",
+    "detail": {
+      "totalAmount": "Total Amount",
+      "paymentReceived": "Payment Received",
+      "processPayment": "Process Payment",
+      "invoice": "Invoice",
+      "history": "History",
+      "invoicePreview": "Invoice Preview",
+      "pdfHint": "PDF preview will be rendered here.",
+      "downloadInvoice": "Download Invoice",
+      "sendReminder": "Send Reminder"
+    }
+  },
+  "rating": {
+    "title": "Beema Rating Engine",
+    "subtitle": "Advanced pricing and risk assessment tools",
+    "heroTitle": "Beema Rating",
+    "heroSubtitle": "Intelligent Insurance Pricing",
+    "heroDescription": "Leverage advanced algorithms and data analytics to calculate accurate premiums, assess risk factors, and optimize your pricing strategies in real-time.",
+    "keyFeatures": "Key Features",
+    "dynamicPricing": "Dynamic Pricing",
+    "dynamicPricingDesc": "Automatically adjust premiums based on market conditions, loss ratios, and risk profiles",
+    "realTimeCalc": "Real-Time Calculations",
+    "realTimeCalcDesc": "Instant premium quotes with sophisticated rating factors and discount structures",
+    "riskAssessment": "Risk Assessment",
+    "riskAssessmentDesc": "Comprehensive risk scoring using machine learning and historical data analysis",
+    "comingSoonTitle": "Full rating engine functionality coming soon",
+    "comingSoonDesc": "We're working hard to bring you the most advanced insurance rating platform"
+  },
+  "underwriting": {
+    "title": "Beema Underwriting Workbench",
+    "subtitle": "Comprehensive risk evaluation and policy decisioning",
+    "heroTitle": "Underwriting Workbench",
+    "heroSubtitle": "Intelligent Risk Assessment Platform",
+    "heroDescription": "Streamline your underwriting process with AI-powered risk analysis, automated referrals, and comprehensive decision support tools for accurate policy evaluation.",
+    "coreCapabilities": "Core Capabilities",
+    "automatedRisk": "Automated Risk Assessment",
+    "automatedRiskDesc": "AI-driven risk scoring and classification with real-time data validation and fraud detection",
+    "policyDecisioning": "Policy Decisioning",
+    "policyDecisioningDesc": "Comprehensive workflows for accept, decline, or refer decisions with audit trails",
+    "referralMgmt": "Referral Management",
+    "referralMgmtDesc": "Smart routing and queue management for cases requiring senior underwriter review",
+    "comingSoonTitle": "Full underwriting workbench launching soon",
+    "comingSoonDesc": "Empowering underwriters with cutting-edge tools for faster, more accurate decisions"
+  },
+  "placeholder": {
+    "agents": {
+      "title": "Agents",
+      "description": "Manage your insurance agents and distribution network"
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Manage your account settings and preferences"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configure system preferences and administrative options"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "Insights and reports on your insurance portfolio performance"
+    },
+    "studio": {
+      "title": "Studio",
+      "description": "Design and customize your insurance products and workflows"
+    }
+  },
+  "submission": {
+    "title": "{product} Submission",
+    "subtitle": "Complete the form below to submit a new {product} policy.",
+    "loading": "Loading {product} submission...",
+    "calculatePremium": "Calculate Premium",
+    "submitting": "Submitting...",
+    "quoteStarted": "Quote Started!",
+    "submissionIdLabel": "Submission ID: {id}",
+    "quoteWorkflowStarted": "Quote workflow started successfully",
+    "dismiss": "Dismiss",
+    "fillRequired": "Please fill in all required fields",
+    "submissionFailed": "Submission failed",
+    "backendUnavailable": "Backend service is unavailable",
+    "backendUnavailableDetail": "The server is not running or cannot be reached. Please ensure the Kernel service is started.",
+    "endpointNotFound": "Submission endpoint not found",
+    "endpointNotFoundDetail": "The workflow service may not be enabled. Check that Temporal is configured and running.",
+    "serverError": "An internal server error occurred. Check the Kernel logs for details.",
+    "networkError": "Failed to connect to server"
+  },
+  "newProduct": {
+    "title": "New {product}",
+    "subtitle": "Fill in the details below to create a new {product} record.",
+    "loading": "Loading {product} form...",
+    "errorTitle": "Error",
+    "quoteStarted": "Quote Started!",
+    "submissionIdLabel": "Submission ID: {id}",
+    "quoteWorkflowStarted": "Quote workflow started successfully",
+    "dismiss": "Dismiss",
+    "fillRequired": "Please fill in all required fields",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "showDebug": "Show Debug",
+    "hideDebug": "Hide Debug",
+    "formState": "Form State (Debug)",
+    "submissionFailed": "Submission failed",
+    "backendUnavailable": "Backend service is unavailable",
+    "backendUnavailableDetail": "The server is not running or cannot be reached. Please ensure the Kernel service is started.",
+    "endpointNotFound": "Submission endpoint not found",
+    "endpointNotFoundDetail": "The workflow service may not be enabled. Check that Temporal is configured and running.",
+    "serverError": "An internal server error occurred. Check the Kernel logs for details.",
+    "networkError": "Failed to connect to server"
+  },
+  "legacyDashboard": {
+    "title": "Beema Portal",
+    "subtitle": "Insurance Management System",
+    "heading": "Dashboard",
+    "description": "Manage your insurance policies, claims, and submissions",
+    "policies": "Policies",
+    "policiesDesc": "View and manage your insurance policies",
+    "claims": "Claims",
+    "claimsDesc": "Submit and track insurance claims",
+    "submissions": "Submissions",
+    "submissionsDesc": "New policy submissions and quotes",
+    "profile": "Profile",
+    "profileDesc": "Manage your account and preferences",
+    "analytics": "Analytics",
+    "analyticsDesc": "View reports and insights",
+    "settings": "Settings",
+    "settingsDesc": "Configure system preferences",
+    "totalPolicies": "Total Policies",
+    "activeClaims": "Active Claims",
+    "premiumVolume": "Premium Volume",
+    "pendingReviews": "Pending Reviews",
+    "newClaim": "New Claim"
+  },
+  "legacyPolicies": {
+    "title": "Policies",
+    "subtitle": "Manage your insurance policies",
+    "policyId": "Policy ID",
+    "insuredName": "Insured Name",
+    "status": "Status",
+    "effectiveDate": "Effective Date",
+    "premium": "Premium"
+  },
+  "legacyClaims": {
+    "title": "Claims",
+    "subtitle": "Submit and track insurance claims",
+    "claimId": "Claim ID",
+    "policyId": "Policy ID",
+    "claimType": "Claim Type",
+    "status": "Status",
+    "dateSubmitted": "Date Submitted",
+    "amount": "Amount",
+    "newClaim": "New Claim"
+  },
+  "legacySubmissions": {
+    "title": "Submissions",
+    "subtitle": "New policy submissions and quotes",
+    "comingSoon": "Submission management coming soon..."
+  },
+  "quotesInProgress": {
+    "title": "Quotes in Progress",
+    "button": "Quotes",
+    "ariaLabel": "Quotes in progress",
+    "noSavedQuotes": "No saved quotes",
+    "quoteSaved": "{count} {count, plural, one {quote} other {quotes}} saved",
+    "empty": "No quotes in progress",
+    "emptyHint": "Start a new quote to save your work",
+    "untitled": "Untitled Quote",
+    "deleteQuote": "Delete quote"
+  },
+  "draftClaims": {
+    "title": "Draft Claims",
+    "button": "Draft Claims",
+    "ariaLabel": "Draft claims",
+    "noSavedClaims": "No saved claims",
+    "claimSaved": "{count} {count, plural, one {claim} other {claims}} saved",
+    "empty": "No draft claims",
+    "emptyHint": "Start a new claim to save your work",
+    "untitled": "Untitled Claim",
+    "deleteDraft": "Delete draft claim"
   }
 }

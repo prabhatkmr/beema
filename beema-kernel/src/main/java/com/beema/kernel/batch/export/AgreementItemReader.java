@@ -60,7 +60,6 @@ public class AgreementItemReader extends JdbcCursorItemReader<Agreement> {
 
             String attributesJson = rs.getString("attributes");
             if (attributesJson != null) {
-                @SuppressWarnings("unchecked")
                 Map<String, Object> attrs = jsonbConverter.convertToEntityAttribute(attributesJson);
                 agreement.setAttributes(attrs);
             }

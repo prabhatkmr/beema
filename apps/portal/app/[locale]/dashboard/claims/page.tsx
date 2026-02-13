@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import {
   Table,
@@ -48,6 +51,8 @@ function StatusBadge({ status }: { status: "Pending" | "Approved" | "Under Revie
 }
 
 export default function ClaimsPage() {
+  const t = useTranslations('legacyClaims');
+  const tc = useTranslations('common');
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -57,17 +62,17 @@ export default function ClaimsPage() {
           className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Link>
 
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Claims</h1>
-            <p className="text-gray-600">Submit and track insurance claims</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+            <p className="text-gray-600">{t('subtitle')}</p>
           </div>
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            New Claim
+            {t('newClaim')}
           </button>
         </div>
 
@@ -76,12 +81,12 @@ export default function ClaimsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Claim ID</TableHead>
-                <TableHead>Policy ID</TableHead>
-                <TableHead>Claim Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date Submitted</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>{t('claimId')}</TableHead>
+                <TableHead>{t('policyId')}</TableHead>
+                <TableHead>{t('claimType')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
+                <TableHead>{t('dateSubmitted')}</TableHead>
+                <TableHead className="text-right">{t('amount')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

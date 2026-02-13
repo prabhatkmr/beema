@@ -1,4 +1,4 @@
-export type FieldType = 'TEXT' | 'CURRENCY' | 'SELECT' | 'TOGGLE';
+export type FieldType = 'TEXT' | 'TEXTAREA' | 'CURRENCY' | 'SELECT' | 'TOGGLE' | 'DATE' | 'DATE_PICKER';
 
 export interface Field {
   id: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@beema/ui';
 import { PageHeader } from '@/components/PageHeader';
 import { DataTable } from '@/components/DataTable';
@@ -10,10 +10,17 @@ import { Modal } from '@/components/Modal';
 import type { DatasourceConfig, DatasourceRequest } from '@/types/admin';
 import * as api from '@/lib/api';
 
+const DEMO_DATASOURCES: DatasourceConfig[] = [
+  { id: 'demo-1', name: 'master', url: 'jdbc:postgresql://localhost:5432/beema_dev', username: 'beema_admin', poolSize: 20, status: 'ACTIVE', config: { connectionTimeout: 30000, idleTimeout: 600000 }, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'demo-2', name: 'tenant-vip-1', url: 'jdbc:postgresql://db-vip-1:5432/beema_vip', username: 'beema_vip', poolSize: 50, status: 'ACTIVE', config: { connectionTimeout: 15000, maxLifetime: 1800000 }, createdAt: '2026-01-05T00:00:00Z', updatedAt: '2026-01-20T00:00:00Z' },
+  { id: 'demo-3', name: 'analytics-ro', url: 'jdbc:postgresql://db-analytics:5432/beema_analytics', username: 'beema_readonly', poolSize: 10, status: 'ACTIVE', config: { connectionTimeout: 60000 }, createdAt: '2026-01-10T00:00:00Z', updatedAt: '2026-02-01T00:00:00Z' },
+];
+
 export default function DatasourcesPage() {
   const [datasources, setDatasources] = useState<DatasourceConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingDs, setEditingDs] = useState<DatasourceConfig | null>(null);
@@ -30,8 +37,11 @@ export default function DatasourcesPage() {
     try {
       const data = await api.listDatasources();
       setDatasources(Array.isArray(data) ? data : []);
+      setIsDemo(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load datasources');
+      setDatasources(DEMO_DATASOURCES);
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
@@ -108,7 +118,25 @@ export default function DatasourcesPage() {
         }
       />
 
-      {error && (
+      {isDemo && (
+        <div className="mb-4 px-4 py-3 rounded-md bg-amber-50 border border-amber-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-600" />
+              <p className="text-sm text-amber-700">Backend unavailable — showing demo data.</p>
+            </div>
+            <button
+              onClick={fetchDatasources}
+              className="flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 px-2 py-1 rounded hover:bg-amber-100 transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
+      {error && !isDemo && (
         <div className="mb-4 px-4 py-3 rounded-md bg-red-50 border border-red-200">
           <div className="flex items-center justify-between">
             <p className="text-sm text-red-700">{error}</p>
@@ -123,7 +151,7 @@ export default function DatasourcesPage() {
           data={datasources}
           loading={loading}
           emptyMessage="No datasources configured"
-          onRowClick={openEdit}
+          onRowClick={isDemo ? undefined : openEdit}
         />
       </div>
 

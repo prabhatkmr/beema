@@ -1,11 +1,14 @@
 'use client';
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AnalyticsPage() {
   const router = useRouter();
+  const t = useTranslations('placeholder.analytics');
+  const tc = useTranslations('common');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] space-y-6">
@@ -15,16 +18,16 @@ export default function AnalyticsPage() {
             <BarChart3 className="h-16 w-16 text-white" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900">Analytics</h1>
+        <h2 className="text-4xl font-bold text-gray-900">{t('title')}</h2>
         <p className="text-lg text-muted-foreground max-w-md">
-          Insights and reports on your insurance portfolio performance
+          {t('description')}
         </p>
         <p className="text-sm text-muted-foreground">
-          Coming soon...
+          {tc('comingSoon')}
         </p>
       </div>
       <Button onClick={() => router.push('/portal/dashboard')} variant="outline">
-        Back to Dashboard
+        {tc('backToDashboard')}
       </Button>
     </div>
   );

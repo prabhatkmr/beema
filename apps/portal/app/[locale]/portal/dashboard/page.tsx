@@ -17,6 +17,7 @@ import {
   Calendar,
   Calculator,
   ClipboardCheck,
+  FileStack,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -51,6 +52,14 @@ export default function DashboardPage() {
       description: tApps('claim.description'),
       badge: 3,
       badgeVariant: "error",
+    },
+    {
+      title: tApps('submissions.title'),
+      icon: FileStack,
+      href: "/portal/submissions",
+      color: "from-cyan-500 to-cyan-600",
+      description: tApps('submissions.description'),
+      badge: 0,
     },
     {
       title: tApps('billing.title'),

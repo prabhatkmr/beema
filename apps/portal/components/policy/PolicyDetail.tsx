@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayoutRenderer } from "@/components/dynamic/LayoutRenderer";
 import { FileText, Clock, FolderOpen } from "lucide-react";
+import { useTranslations } from 'next-intl';
 import type { Layout } from "@/types/layout";
 
 interface PolicyDetailProps {
@@ -48,8 +49,8 @@ const mockLayout: Layout = {
       fields: [
         { id: "policyNumber", label: "Policy Number", type: "TEXT", required: true },
         { id: "product", label: "Product", type: "TEXT", required: true },
-        { id: "effectiveDate", label: "Effective Date", type: "TEXT", required: true },
-        { id: "expiryDate", label: "Expiry Date", type: "TEXT", required: true },
+        { id: "effectiveDate", label: "Effective Date", type: "DATE", required: true },
+        { id: "expiryDate", label: "Expiry Date", type: "DATE", required: true },
       ],
     },
     {
@@ -70,8 +71,8 @@ function getMockData(policy: PolicyDetailProps["policy"]): Record<string, any> {
   return {
     policyNumber: policy.id,
     product: policy.subtitle,
-    effectiveDate: "01/01/2026",
-    expiryDate: "01/01/2027",
+    effectiveDate: "2026-01-01",
+    expiryDate: "2027-01-01",
     insuredName: policy.title.replace(/^(Renewal|Quote|Bound|Endorsement|New Business|MTA)\s*-\s*/, ""),
     insuredAddress: "123 Business Park, London, UK",
     lineOfBusiness: policy.subtitle,
@@ -80,6 +81,7 @@ function getMockData(policy: PolicyDetailProps["policy"]): Record<string, any> {
 }
 
 export function PolicyDetail({ policy, layout, data }: PolicyDetailProps) {
+  const t = useTranslations('policy.detail');
   const resolvedLayout = layout ?? mockLayout;
   const resolvedData = data ?? getMockData(policy);
   const badgeVariant = statusVariantMap[policy.status] ?? policy.statusColor;
@@ -107,16 +109,16 @@ export function PolicyDetail({ policy, layout, data }: PolicyDetailProps) {
         <div className="border-b px-6">
           <TabsList className="h-10">
             <TabsTrigger value="overview" className="gap-1.5">
-              <FileText className="h-4 w-4" />
-              Overview
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              {t('overview')}
             </TabsTrigger>
             <TabsTrigger value="timeline" className="gap-1.5">
-              <Clock className="h-4 w-4" />
-              Timeline
+              <Clock className="h-4 w-4" aria-hidden="true" />
+              {t('timeline')}
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-1.5">
-              <FolderOpen className="h-4 w-4" />
-              Documents
+              <FolderOpen className="h-4 w-4" aria-hidden="true" />
+              {t('documents')}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -156,10 +158,10 @@ export function PolicyDetail({ policy, layout, data }: PolicyDetailProps) {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
               <p className="mt-3 text-sm font-medium text-muted-foreground">
-                No documents
+                {t('noDocuments')}
               </p>
               <p className="text-xs text-muted-foreground">
-                Documents will appear here once uploaded.
+                {t('documentsHint')}
               </p>
             </div>
           </TabsContent>
@@ -168,8 +170,8 @@ export function PolicyDetail({ policy, layout, data }: PolicyDetailProps) {
 
       {/* Footer - sticky action bar */}
       <div className="flex items-center justify-end gap-3 border-t bg-background px-6 py-3">
-        <Button variant="outline">Endorse</Button>
-        <Button variant="destructive">Cancel Policy</Button>
+        <Button variant="outline">{t('endorse')}</Button>
+        <Button variant="destructive">{t('cancelPolicy')}</Button>
       </div>
     </div>
   );

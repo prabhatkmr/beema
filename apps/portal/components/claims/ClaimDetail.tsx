@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FileText, DollarSign, MessageSquare } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 interface ClaimDetailProps {
   claim: {
@@ -45,6 +46,8 @@ const mockPayments = [
 ];
 
 export function ClaimDetail({ claim }: ClaimDetailProps) {
+  const t = useTranslations('claims.detail');
+  const tf = useTranslations('claims.financials');
   const badgeVariant = statusVariantMap[claim.status] ?? claim.statusColor;
   const lossDate = claim.lossDate ?? "Jan 15, 2026";
   const reserve = claim.reserve ?? "$50,000";
@@ -66,11 +69,11 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
       {/* Key Metrics */}
       <div className="flex items-center gap-8 border-b px-6 py-4">
         <div>
-          <p className="text-xs font-medium uppercase text-muted-foreground">Reserve</p>
+          <p className="text-xs font-medium uppercase text-muted-foreground">{t('reserve')}</p>
           <p className="text-2xl font-bold">{reserve}</p>
         </div>
         <div>
-          <p className="text-xs font-medium uppercase text-muted-foreground">Paid</p>
+          <p className="text-xs font-medium uppercase text-muted-foreground">{t('paid')}</p>
           <p className="text-2xl font-bold">{paid}</p>
         </div>
       </div>
@@ -80,16 +83,16 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
         <div className="border-b px-6">
           <TabsList className="h-10">
             <TabsTrigger value="overview" className="gap-1.5">
-              <FileText className="h-4 w-4" />
-              Overview
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              {t('overview')}
             </TabsTrigger>
             <TabsTrigger value="financials" className="gap-1.5">
-              <DollarSign className="h-4 w-4" />
-              Financials
+              <DollarSign className="h-4 w-4" aria-hidden="true" />
+              {t('financials')}
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-1.5">
-              <MessageSquare className="h-4 w-4" />
-              Notes
+              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+              {t('notes')}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -98,7 +101,7 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
           <TabsContent value="overview" className="m-0 p-6">
             <div className="space-y-4">
               <div className="rounded-lg border p-4">
-                <h3 className="mb-2 text-sm font-semibold">Loss Description</h3>
+                <h3 className="mb-2 text-sm font-semibold">{t('lossDescription')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Water damage to commercial property caused by burst pipe on the second floor.
                   Significant damage to office equipment, flooring, and ceiling tiles in the
@@ -109,22 +112,22 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
                 </p>
               </div>
               <div className="rounded-lg border p-4">
-                <h3 className="mb-2 text-sm font-semibold">Claim Details</h3>
+                <h3 className="mb-2 text-sm font-semibold">{t('claimDetails')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Claim Type:</span>
+                    <span className="text-muted-foreground">{t('claimType')}</span>
                     <span className="ml-2 font-medium">{claim.subtitle}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Policy:</span>
+                    <span className="text-muted-foreground">{t('policy')}</span>
                     <span className="ml-2 font-medium">POL-001</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Adjuster:</span>
+                    <span className="text-muted-foreground">{t('adjuster')}</span>
                     <span className="ml-2 font-medium">James Patterson</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Date Reported:</span>
+                    <span className="text-muted-foreground">{t('dateReported')}</span>
                     <span className="ml-2 font-medium">Jan 16, 2026</span>
                   </div>
                 </div>
@@ -136,10 +139,10 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>{tf('date')}</TableHead>
+                  <TableHead>{tf('description')}</TableHead>
+                  <TableHead>{tf('type')}</TableHead>
+                  <TableHead className="text-right">{tf('amount')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,10 +166,10 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground/50" />
               <p className="mt-3 text-sm font-medium text-muted-foreground">
-                No notes
+                {t('noNotes')}
               </p>
               <p className="text-xs text-muted-foreground">
-                Notes and comments will appear here once added.
+                {t('notesHint')}
               </p>
             </div>
           </TabsContent>
@@ -175,8 +178,8 @@ export function ClaimDetail({ claim }: ClaimDetailProps) {
 
       {/* Footer - sticky action bar */}
       <div className="flex items-center justify-end gap-3 border-t bg-background px-6 py-3">
-        <Button variant="outline">Add Payment</Button>
-        <Button variant="destructive">Close Claim</Button>
+        <Button variant="outline">{t('addPayment')}</Button>
+        <Button variant="destructive">{t('closeClaim')}</Button>
       </div>
     </div>
   );

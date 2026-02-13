@@ -2,7 +2,15 @@
   "dashboard": {
     "greeting": "Buenos Días, {name}",
     "welcome": "Bienvenido a tu espacio de trabajo Beema",
-    "title": "Panel de Control"
+    "title": "Panel de Control",
+    "quickAccess": "Acceso Rápido",
+    "stats": {
+      "totalPremium": "Volumen Total de Primas",
+      "activePolicies": "Pólizas Activas",
+      "lastUpdated": "Última Actualización",
+      "new": "{count} nuevos",
+      "today": "Hoy"
+    }
   },
   "apps": {
     "policy": {
@@ -18,6 +26,16 @@
     "billing": {
       "title": "Facturación Beema",
       "description": "Facturas y pagos",
+      "pending": "{count} pendientes"
+    },
+    "rating": {
+      "title": "Tarificación Beema",
+      "description": "Cálculo de primas",
+      "pending": "{count} pendientes"
+    },
+    "underwriting": {
+      "title": "Suscripción Beema",
+      "description": "Evaluación de riesgos",
       "pending": "{count} pendientes"
     },
     "studio": {
@@ -44,6 +62,11 @@
       "title": "Configuración",
       "description": "Ajustes del sistema",
       "pending": "{count} pendientes"
+    },
+    "submissions": {
+      "title": "Presentaciones",
+      "description": "Cotizaciones y presentaciones de pólizas",
+      "pending": "{count} pendientes"
     }
   },
   "common": {
@@ -57,6 +80,287 @@
     "search": "Buscar",
     "filter": "Filtrar",
     "export": "Exportar",
-    "import": "Importar"
+    "import": "Importar",
+    "submit": "Enviar",
+    "retry": "Reintentar",
+    "backToDashboard": "Volver al Panel",
+    "goBack": "Volver",
+    "comingSoon": "Próximamente...",
+    "noResults": "Sin resultados",
+    "selectItem": "Seleccione un elemento para ver detalles",
+    "filters": "Filtros:",
+    "sortBy": "Ordenar por:",
+    "clearAllFilters": "Limpiar todos los filtros",
+    "selected": "{count} seleccionados",
+    "allLabel": "Todos {label}",
+    "sort": {
+      "newest": "Más recientes",
+      "oldest": "Más antiguos",
+      "nameAsc": "Nombre (A-Z)",
+      "nameDesc": "Nombre (Z-A)",
+      "status": "Estado"
+    },
+    "collapseSidebar": "Contraer barra lateral",
+    "expandSidebar": "Expandir barra lateral"
+  },
+  "policy": {
+    "title": "Pólizas",
+    "searchPlaceholder": "Buscar pólizas...",
+    "newQuote": "+ Nueva Cotización",
+    "allStatuses": "Estados",
+    "allLines": "Líneas de Negocio",
+    "filterByStatus": "Filtrar por estado",
+    "filterByLine": "Filtrar por línea de negocio",
+    "sortPolicies": "Ordenar pólizas",
+    "count": "{count} {count, plural, one {póliza} other {pólizas}}",
+    "noResults": "No se encontraron pólizas",
+    "newQuoteTitle": "Nueva Cotización",
+    "newQuoteComparison": "Comparación de Cotizaciones",
+    "createQuote": "Crear una nueva cotización de póliza",
+    "compareQuotes": "Crear y comparar dos escenarios de cotización",
+    "singleQuote": "Cotización Única",
+    "compareTwo": "Comparar (2)",
+    "quoteOptionA": "Opción de Cotización A",
+    "quoteOptionB": "Opción de Cotización B",
+    "submitQuote": "Enviar Cotización",
+    "submitBothQuotes": "Enviar Ambas Cotizaciones",
+    "detail": {
+      "overview": "Resumen",
+      "timeline": "Cronología",
+      "documents": "Documentos",
+      "noDocuments": "Sin documentos",
+      "documentsHint": "Los documentos aparecerán aquí una vez subidos.",
+      "endorse": "Endosar",
+      "cancelPolicy": "Cancelar Póliza"
+    }
+  },
+  "claims": {
+    "title": "Reclamaciones",
+    "searchPlaceholder": "Buscar reclamaciones...",
+    "newClaim": "+ Nuevo Aviso",
+    "allStatuses": "Estados",
+    "allTypes": "Tipos de Reclamación",
+    "filterByStatus": "Filtrar por estado",
+    "filterByType": "Filtrar por tipo de reclamación",
+    "sortClaims": "Ordenar reclamaciones",
+    "count": "{count} {count, plural, one {reclamación} other {reclamaciones}}",
+    "noResults": "No se encontraron reclamaciones",
+    "fnolTitle": "Nueva Reclamación (FNOL)",
+    "fnolSubtitle": "Primer Aviso de Siniestro - Crear nueva reclamación",
+    "submitClaim": "Enviar Reclamación",
+    "selectClaim": "Seleccione una reclamación para ver detalles",
+    "detail": {
+      "overview": "Resumen",
+      "financials": "Finanzas",
+      "notes": "Notas",
+      "reserve": "Reserva",
+      "paid": "Pagado",
+      "lossDescription": "Descripción del Siniestro",
+      "claimDetails": "Detalles de la Reclamación",
+      "claimType": "Tipo de Reclamación:",
+      "policy": "Póliza:",
+      "adjuster": "Perito:",
+      "dateReported": "Fecha de Reporte:",
+      "noNotes": "Sin notas",
+      "notesHint": "Las notas y comentarios aparecerán aquí una vez añadidos.",
+      "addPayment": "Añadir Pago",
+      "closeClaim": "Cerrar Reclamación"
+    },
+    "financials": {
+      "date": "Fecha",
+      "description": "Descripción",
+      "type": "Tipo",
+      "amount": "Importe"
+    }
+  },
+  "billing": {
+    "title": "Facturación",
+    "searchPlaceholder": "Buscar facturas...",
+    "newInvoice": "+ Nueva Factura",
+    "allStatuses": "Estados",
+    "allProducts": "Productos",
+    "filterByStatus": "Filtrar por estado",
+    "filterByProduct": "Filtrar por producto",
+    "sortInvoices": "Ordenar facturas",
+    "count": "{count} {count, plural, one {factura} other {facturas}}",
+    "noResults": "No se encontraron facturas",
+    "selectInvoice": "Seleccione una factura para ver detalles",
+    "detail": {
+      "totalAmount": "Importe Total",
+      "paymentReceived": "Pago Recibido",
+      "processPayment": "Procesar Pago",
+      "invoice": "Factura",
+      "history": "Historial",
+      "invoicePreview": "Vista Previa de Factura",
+      "pdfHint": "La vista previa del PDF se mostrará aquí.",
+      "downloadInvoice": "Descargar Factura",
+      "sendReminder": "Enviar Recordatorio"
+    }
+  },
+  "rating": {
+    "title": "Motor de Tarificación Beema",
+    "subtitle": "Herramientas avanzadas de fijación de precios y evaluación de riesgos",
+    "heroTitle": "Tarificación Beema",
+    "heroSubtitle": "Fijación Inteligente de Precios de Seguros",
+    "heroDescription": "Aproveche algoritmos avanzados y análisis de datos para calcular primas precisas, evaluar factores de riesgo y optimizar sus estrategias de precios en tiempo real.",
+    "keyFeatures": "Características Principales",
+    "dynamicPricing": "Precios Dinámicos",
+    "dynamicPricingDesc": "Ajuste automático de primas según condiciones del mercado, ratios de siniestralidad y perfiles de riesgo",
+    "realTimeCalc": "Cálculos en Tiempo Real",
+    "realTimeCalcDesc": "Cotizaciones instantáneas con factores de tarificación sofisticados y estructuras de descuento",
+    "riskAssessment": "Evaluación de Riesgos",
+    "riskAssessmentDesc": "Puntuación integral de riesgos utilizando aprendizaje automático y análisis de datos históricos",
+    "comingSoonTitle": "Funcionalidad completa del motor de tarificación próximamente",
+    "comingSoonDesc": "Estamos trabajando para ofrecerle la plataforma de tarificación de seguros más avanzada"
+  },
+  "underwriting": {
+    "title": "Mesa de Suscripción Beema",
+    "subtitle": "Evaluación integral de riesgos y decisiones de pólizas",
+    "heroTitle": "Mesa de Suscripción",
+    "heroSubtitle": "Plataforma Inteligente de Evaluación de Riesgos",
+    "heroDescription": "Optimice su proceso de suscripción con análisis de riesgos impulsado por IA, derivaciones automatizadas y herramientas integrales de soporte a la decisión para una evaluación precisa de pólizas.",
+    "coreCapabilities": "Capacidades Principales",
+    "automatedRisk": "Evaluación Automatizada de Riesgos",
+    "automatedRiskDesc": "Puntuación y clasificación de riesgos impulsada por IA con validación de datos en tiempo real y detección de fraude",
+    "policyDecisioning": "Decisiones de Pólizas",
+    "policyDecisioningDesc": "Flujos de trabajo completos para decisiones de aceptación, rechazo o derivación con pistas de auditoría",
+    "referralMgmt": "Gestión de Derivaciones",
+    "referralMgmtDesc": "Enrutamiento inteligente y gestión de colas para casos que requieren revisión de suscriptor senior",
+    "comingSoonTitle": "Mesa de suscripción completa próximamente",
+    "comingSoonDesc": "Empoderando a los suscriptores con herramientas de vanguardia para decisiones más rápidas y precisas"
+  },
+  "placeholder": {
+    "agents": {
+      "title": "Agentes",
+      "description": "Gestione sus agentes de seguros y red de distribución"
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Gestione la configuración y preferencias de su cuenta"
+    },
+    "settings": {
+      "title": "Configuración",
+      "description": "Configure las preferencias del sistema y opciones administrativas"
+    },
+    "analytics": {
+      "title": "Analíticas",
+      "description": "Información y reportes sobre el rendimiento de su cartera de seguros"
+    },
+    "studio": {
+      "title": "Estudio",
+      "description": "Diseñe y personalice sus productos y flujos de trabajo de seguros"
+    }
+  },
+  "submission": {
+    "title": "Presentación de {product}",
+    "subtitle": "Complete el formulario a continuación para enviar una nueva póliza de {product}.",
+    "loading": "Cargando presentación de {product}...",
+    "calculatePremium": "Calcular Prima",
+    "submitting": "Enviando...",
+    "quoteStarted": "¡Cotización Iniciada!",
+    "submissionIdLabel": "ID de Presentación: {id}",
+    "quoteWorkflowStarted": "Flujo de cotización iniciado correctamente",
+    "dismiss": "Cerrar",
+    "fillRequired": "Por favor complete todos los campos obligatorios",
+    "submissionFailed": "Error en la presentación",
+    "backendUnavailable": "Servicio no disponible",
+    "backendUnavailableDetail": "El servidor no está en ejecución o no se puede alcanzar. Asegúrese de que el servicio Kernel esté iniciado.",
+    "endpointNotFound": "Punto de envío no encontrado",
+    "endpointNotFoundDetail": "Es posible que el servicio de flujo de trabajo no esté habilitado. Verifique que Temporal esté configurado y en ejecución.",
+    "serverError": "Se produjo un error interno del servidor. Consulte los registros del Kernel para más detalles.",
+    "networkError": "No se pudo conectar al servidor"
+  },
+  "newProduct": {
+    "title": "Nuevo {product}",
+    "subtitle": "Complete los detalles a continuación para crear un nuevo registro de {product}.",
+    "loading": "Cargando formulario de {product}...",
+    "errorTitle": "Error",
+    "quoteStarted": "¡Cotización Iniciada!",
+    "submissionIdLabel": "ID de Presentación: {id}",
+    "quoteWorkflowStarted": "Flujo de cotización iniciado correctamente",
+    "dismiss": "Cerrar",
+    "fillRequired": "Por favor complete todos los campos obligatorios",
+    "submit": "Enviar",
+    "submitting": "Enviando...",
+    "showDebug": "Mostrar Depuración",
+    "hideDebug": "Ocultar Depuración",
+    "formState": "Estado del Formulario (Depuración)",
+    "submissionFailed": "Error en la presentación",
+    "backendUnavailable": "Servicio no disponible",
+    "backendUnavailableDetail": "El servidor no está en ejecución o no se puede alcanzar. Asegúrese de que el servicio Kernel esté iniciado.",
+    "endpointNotFound": "Punto de envío no encontrado",
+    "endpointNotFoundDetail": "Es posible que el servicio de flujo de trabajo no esté habilitado. Verifique que Temporal esté configurado y en ejecución.",
+    "serverError": "Se produjo un error interno del servidor. Consulte los registros del Kernel para más detalles.",
+    "networkError": "No se pudo conectar al servidor"
+  },
+  "legacyDashboard": {
+    "title": "Portal Beema",
+    "subtitle": "Sistema de Gestión de Seguros",
+    "heading": "Panel de Control",
+    "description": "Gestione sus pólizas de seguros, reclamaciones y presentaciones",
+    "policies": "Pólizas",
+    "policiesDesc": "Ver y gestionar sus pólizas de seguros",
+    "claims": "Reclamaciones",
+    "claimsDesc": "Enviar y rastrear reclamaciones de seguros",
+    "submissions": "Presentaciones",
+    "submissionsDesc": "Nuevas presentaciones y cotizaciones de pólizas",
+    "profile": "Perfil",
+    "profileDesc": "Gestionar su cuenta y preferencias",
+    "analytics": "Analíticas",
+    "analyticsDesc": "Ver informes y estadísticas",
+    "settings": "Configuración",
+    "settingsDesc": "Configurar preferencias del sistema",
+    "totalPolicies": "Total de Pólizas",
+    "activeClaims": "Reclamaciones Activas",
+    "premiumVolume": "Volumen de Primas",
+    "pendingReviews": "Revisiones Pendientes",
+    "newClaim": "Nueva Reclamación"
+  },
+  "legacyPolicies": {
+    "title": "Pólizas",
+    "subtitle": "Gestionar sus pólizas de seguros",
+    "policyId": "ID de Póliza",
+    "insuredName": "Nombre del Asegurado",
+    "status": "Estado",
+    "effectiveDate": "Fecha de Vigencia",
+    "premium": "Prima"
+  },
+  "legacyClaims": {
+    "title": "Reclamaciones",
+    "subtitle": "Enviar y rastrear reclamaciones de seguros",
+    "claimId": "ID de Reclamación",
+    "policyId": "ID de Póliza",
+    "claimType": "Tipo de Reclamación",
+    "status": "Estado",
+    "dateSubmitted": "Fecha de Envío",
+    "amount": "Importe",
+    "newClaim": "Nueva Reclamación"
+  },
+  "legacySubmissions": {
+    "title": "Presentaciones",
+    "subtitle": "Nuevas presentaciones y cotizaciones de pólizas",
+    "comingSoon": "Gestión de presentaciones próximamente..."
+  },
+  "quotesInProgress": {
+    "title": "Cotizaciones en Progreso",
+    "button": "Cotizaciones",
+    "ariaLabel": "Cotizaciones en progreso",
+    "noSavedQuotes": "Sin cotizaciones guardadas",
+    "quoteSaved": "{count} {count, plural, one {cotización guardada} other {cotizaciones guardadas}}",
+    "empty": "Sin cotizaciones en progreso",
+    "emptyHint": "Inicie una nueva cotización para guardar su trabajo",
+    "untitled": "Cotización sin título",
+    "deleteQuote": "Eliminar cotización"
+  },
+  "draftClaims": {
+    "title": "Borradores de Reclamaciones",
+    "button": "Borradores",
+    "ariaLabel": "Borradores de reclamaciones",
+    "noSavedClaims": "Sin reclamaciones guardadas",
+    "claimSaved": "{count} {count, plural, one {reclamación guardada} other {reclamaciones guardadas}}",
+    "empty": "Sin borradores de reclamaciones",
+    "emptyHint": "Inicie una nueva reclamación para guardar su trabajo",
+    "untitled": "Reclamación sin título",
+    "deleteDraft": "Eliminar borrador de reclamación"
   }
 }

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import type { Layout, Field } from "@/types/layout";
+import { useFormatters } from "@/lib/format-utils";
 
 export interface LayoutRendererProps {
   layout: Layout;
@@ -36,11 +37,13 @@ function FieldRenderer({
   value,
   onChange,
   readOnly,
+  currencySymbol,
 }: {
   field: Field;
   value: any;
   onChange: (fieldId: string, value: any) => void;
   readOnly?: boolean;
+  currencySymbol: string;
 }) {
   switch (field.type) {
     case "TEXT":
@@ -56,6 +59,7 @@ function FieldRenderer({
             value={value ?? field.defaultValue ?? ""}
             onChange={(e) => onChange(field.id, e.target.value)}
             required={field.required}
+            aria-required={field.required}
             disabled={readOnly}
           />
         </div>
@@ -70,7 +74,7 @@ function FieldRenderer({
           </Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              $
+              {currencySymbol}
             </span>
             <Input
               id={field.id}
@@ -80,6 +84,7 @@ function FieldRenderer({
               value={value ?? field.defaultValue ?? ""}
               onChange={(e) => onChange(field.id, e.target.value)}
               required={field.required}
+              aria-required={field.required}
               min={0}
               step="0.01"
               disabled={readOnly}
@@ -100,7 +105,7 @@ function FieldRenderer({
             onValueChange={(v) => onChange(field.id, v)}
             disabled={readOnly}
           >
-            <SelectTrigger id={field.id}>
+            <SelectTrigger id={field.id} aria-required={field.required}>
               <SelectValue placeholder={field.placeholder ?? "Select..."} />
             </SelectTrigger>
             <SelectContent>
@@ -113,6 +118,27 @@ function FieldRenderer({
           </Select>
         </div>
       );
+
+    case "DATE":
+    case "DATE_PICKER": {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={field.id}>
+            {field.label}
+            {field.required && <span className="ml-1 text-destructive">*</span>}
+          </Label>
+          <Input
+            id={field.id}
+            type="date"
+            value={value ?? field.defaultValue ?? ""}
+            onChange={(e) => onChange(field.id, e.target.value)}
+            required={field.required}
+            aria-required={field.required}
+            disabled={readOnly}
+          />
+        </div>
+      );
+    }
 
     case "TOGGLE":
       return (
@@ -136,12 +162,15 @@ function FieldRenderer({
 }
 
 export function LayoutRenderer({ layout, data, onChange, readOnly }: LayoutRendererProps) {
+  const { getCurrencySymbol } = useFormatters();
+  const currencySymbol = getCurrencySymbol();
+
   return (
     <div className="space-y-6">
       {layout.regions.map((region, index) => (
         <div key={region.id}>
           {index > 0 && <Separator className="mb-6" />}
-          <Card>
+          <Card role="group" aria-label={region.label}>
             <CardHeader>
               <CardTitle>{region.label}</CardTitle>
             </CardHeader>
@@ -154,6 +183,7 @@ export function LayoutRenderer({ layout, data, onChange, readOnly }: LayoutRende
                     value={data[field.id]}
                     onChange={onChange}
                     readOnly={readOnly}
+                    currencySymbol={currencySymbol}
                   />
                 ))}
               </div>

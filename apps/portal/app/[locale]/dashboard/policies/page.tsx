@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import {
   Table,
@@ -63,6 +66,8 @@ function StatusBadge({ status }: { status: "Active" | "Review" }) {
 }
 
 export default function PoliciesPage() {
+  const t = useTranslations('legacyPolicies');
+  const tc = useTranslations('common');
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -72,13 +77,13 @@ export default function PoliciesPage() {
           className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
+          {tc('backToDashboard')}
         </Link>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Policies</h1>
-          <p className="text-gray-600">Manage your insurance policies</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* Policies Table */}
@@ -86,11 +91,11 @@ export default function PoliciesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Policy ID</TableHead>
-                <TableHead>Insured Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Effective Date</TableHead>
-                <TableHead className="text-right">Premium</TableHead>
+                <TableHead>{t('policyId')}</TableHead>
+                <TableHead>{t('insuredName')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
+                <TableHead>{t('effectiveDate')}</TableHead>
+                <TableHead className="text-right">{t('premium')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
