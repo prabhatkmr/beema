@@ -74,6 +74,8 @@ All features support **Retail, Commercial, and London Market** contexts.
 
 ## 🚀 Quick Start
 
+> 📖 **New Developers:** See [infra/DEV_SETUP.md](infra/DEV_SETUP.md) for a comprehensive setup guide with helpful shell aliases and troubleshooting tips.
+
 ### Prerequisites
 
 - **Node.js** >= 18.0.0

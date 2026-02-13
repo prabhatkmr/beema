@@ -5,6 +5,7 @@
   "description": "Beema Insurance Platform - Turborepo Monorepo",
   "workspaces": [
     "apps/*",
+    "!apps/studio-vite-backup",
     "packages/*"
   ],
   "scripts": {
@@ -12,6 +13,8 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
+    "dev:frontend": "turbo run dev --filter=@beema/dashboard --filter=@beema/studio --filter=@beema/portal",
+    "dev:backend": "docker compose up -d beema-kernel metadata-service beema-message-processor beema-streaming",
     "clean": "turbo run clean",
     "format": "turbo run format"
   },

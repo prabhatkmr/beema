@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///Users/prabhatkumar/Desktop/dev-directory/beema/apps/dashboard/src/app/globals.css"],"sourcesContent":["@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n:root {\n  --foreground-rgb: 0, 0, 0;\n  --background-start-rgb: 214, 219, 220;\n  --background-end-rgb: 255, 255, 255;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    --foreground-rgb: 255, 255, 255;\n    --background-start-rgb: 0, 0, 0;\n    --background-end-rgb: 0, 0, 0;\n  }\n}\n\nbody {\n  color: rgb(var(--foreground-rgb));\n}\n\n@layer utilities {\n  .text-balance {\n    text-wrap: balance;\n  }\n}\n"],"names":[],"mappings":"AAAA;;AACA;;AACA;;AAEA;;;;;;AAMA;EACE;;;;;;;AAOF;;;;AAIA;EACE"}}]
+}
