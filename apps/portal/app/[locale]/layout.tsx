@@ -42,7 +42,7 @@ export default async function LocaleLayout({
       <nav className="border-b bg-background" role="navigation" aria-label="Main navigation">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-xl font-bold text-primary">Beema Portal</h1>
+            <h1 className="text-xl font-bold text-primary">Best Insurance Company</h1>
             <div className="flex items-center gap-3">
               <QuotesInProgressWrapper />
               <LanguageSwitcher />

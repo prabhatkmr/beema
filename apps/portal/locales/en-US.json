@@ -20,6 +20,16 @@
       "description": "Invoices and payments",
       "pending": "{count} pending"
     },
+    "rating": {
+      "title": "Beema Rating",
+      "description": "Premium calculation",
+      "pending": "{count} pending"
+    },
+    "underwriting": {
+      "title": "Beema Underwriting",
+      "description": "Risk assessment",
+      "pending": "{count} pending"
+    },
     "studio": {
       "title": "Beema Studio",
       "description": "Product configuration",

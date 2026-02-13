@@ -15,6 +15,8 @@ import {
   UserCircle,
   TrendingUp,
   Calendar,
+  Calculator,
+  ClipboardCheck,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -44,7 +46,7 @@ export default function DashboardPage() {
     {
       title: tApps('claim.title'),
       icon: AlertCircle,
-      href: "/portal/claim",
+      href: "/portal/claims",
       color: "from-red-500 to-red-600",
       description: tApps('claim.description'),
       badge: 3,
@@ -57,6 +59,23 @@ export default function DashboardPage() {
       color: "from-emerald-500 to-emerald-600",
       description: tApps('billing.description'),
       badge: 2,
+      badgeVariant: "warning",
+    },
+    {
+      title: tApps('rating.title'),
+      icon: Calculator,
+      href: "/portal/rating",
+      color: "from-teal-500 to-teal-600",
+      description: tApps('rating.description'),
+      badge: 0,
+    },
+    {
+      title: tApps('underwriting.title'),
+      icon: ClipboardCheck,
+      href: "/portal/underwriting",
+      color: "from-amber-500 to-amber-600",
+      description: tApps('underwriting.description'),
+      badge: 4,
       badgeVariant: "warning",
     },
     {

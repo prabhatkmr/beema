@@ -11,6 +11,8 @@ import {
   Building2,
   Landmark,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   X,
   Plus,
 } from "lucide-react";
@@ -275,6 +277,7 @@ export default function PolicyCenterPage() {
   const [currentQuoteId, setCurrentQuoteId] = useState<string | null>(null);
   const [quote1FormData, setQuote1FormData] = useState<Record<string, any>>({});
   const [quote2FormData, setQuote2FormData] = useState<Record<string, any>>({});
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Check for resumed quote on mount
   useEffect(() => {
@@ -399,7 +402,7 @@ export default function PolicyCenterPage() {
     <AppShell
       title="Dashboard"
       searchPlaceholder="Search policies..."
-      onBack={() => router.back()}
+      onBack={() => router.push('/portal/dashboard')}
       onSearchChange={setSearchQuery}
       actionSlot={
         <Button
@@ -473,8 +476,8 @@ export default function PolicyCenterPage() {
           isCreatingQuote ? "flex" : "grid grid-cols-12"
         )}>
           {/* Left Sidebar - Policy List (hidden when creating quotes) */}
-          {!isCreatingQuote && (
-            <aside className="col-span-4 overflow-y-auto border-r">
+          {!isCreatingQuote && !isSidebarCollapsed && (
+            <aside className="col-span-4 overflow-y-auto border-r relative">
               {filteredPolicies.length === 0 ? (
                 <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
                   No policies found
@@ -496,14 +499,32 @@ export default function PolicyCenterPage() {
                   />
                 ))
               )}
+              <button
+                onClick={() => setIsSidebarCollapsed(true)}
+                className="absolute top-1/2 -translate-y-1/2 -right-3 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+              >
+                <ChevronLeft className="h-5 w-5 text-blue-600" />
+              </button>
             </aside>
           )}
 
         {/* Right Detail Panel / Full Width Quote Panel */}
         <section className={cn(
           "overflow-hidden flex flex-col",
-          isCreatingQuote ? "flex-1" : "col-span-8"
+          isCreatingQuote ? "flex-1" : isSidebarCollapsed ? "col-span-12" : "col-span-8"
         )}>
+          {!isCreatingQuote && isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="fixed top-1/2 -translate-y-1/2 left-0 px-1.5 py-5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 border-l-0 rounded-r-lg transition-all shadow-lg hover:shadow-xl z-20"
+              aria-label="Expand sidebar"
+              title="Expand sidebar"
+            >
+              <ChevronRight className="h-5 w-5 text-blue-600" />
+            </button>
+          )}
           {isCreatingQuote ? (
             <>
               <div className="border-b px-6 py-4 flex items-center justify-between">
@@ -604,6 +625,13 @@ export default function PolicyCenterPage() {
           )}
         </section>
         </div>
+      </div>
+
+      {/* Back to Dashboard Button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+        <Button onClick={() => router.push('/portal/dashboard')} variant="outline" className="shadow-lg">
+          Back to Dashboard
+        </Button>
       </div>
     </AppShell>
   );
