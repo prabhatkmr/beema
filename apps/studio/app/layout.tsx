@@ -37,6 +37,9 @@ export default function RootLayout({
                 <Link href="/webhooks" className="hover:text-blue-600">
                   Webhooks
                 </Link>
+                <Link href="/batch-schedules" className="hover:text-blue-600">
+                  Batch Schedules
+                </Link>
               </div>
             </div>
           </div>

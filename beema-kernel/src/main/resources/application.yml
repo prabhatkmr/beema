@@ -42,6 +42,12 @@ spring:
         generate_statistics: ${HIBERNATE_STATS:false}
     show-sql: ${SHOW_SQL:false}
 
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false  # Don't auto-run jobs on startup
+
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -122,6 +128,26 @@ beema:
       - RETAIL
       - COMMERCIAL
       - LONDON_MARKET
+
+  # Blob Storage Configuration (prefix: beema.storage)
+  storage:
+    type: ${STORAGE_TYPE:filesystem}
+    s3:
+      bucket: ${S3_BUCKET:beema-exports}
+      region: ${S3_REGION:us-east-1}
+      endpoint: ${S3_ENDPOINT:}
+    azure:
+      connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+      container-name: ${AZURE_CONTAINER_NAME:beema-exports}
+    filesystem:
+      base-path: ${STORAGE_BASE_PATH:data/exports}
+
+# Temporal.io Schedule Configuration
+temporal:
+  enabled: ${TEMPORAL_ENABLED:false}
+  endpoint: ${TEMPORAL_ENDPOINT:localhost:7233}
+  namespace: ${TEMPORAL_NAMESPACE:default}
+  task-queue: ${TEMPORAL_TASK_QUEUE:beema-batch-queue}
 
 # Logging Configuration
 logging:

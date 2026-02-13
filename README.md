@@ -52,6 +52,23 @@ beema/
 - **Write Shield:** Mass assignment protection
 - **Caching Layer:** Caffeine with 4-hour TTL
 
+### 📊 Analytics Layer
+- **Parquet Export:** Batch export agreements to columnar Parquet format via Spring Batch
+- **Cloud-Agnostic Storage:** Pluggable blob storage -- AWS S3, Azure Blob, MinIO, or local filesystem
+- **Dynamic Schema:** JSONB attributes auto-flattened into Avro → Parquet columns
+- **Tenant Isolation:** Hive-style partitioned paths (`tenant={id}/object=agreement/date={date}/`)
+- **Local Dev:** MinIO in Docker Compose simulates S3 with zero cloud dependencies
+
+```bash
+# Quick export example
+curl -X POST http://localhost:8080/api/v1/batch/export/parquet \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: tenant-123" \
+  -d '{"tenantId": "tenant-123"}'
+```
+
+See [Analytics Quick Start](docs/QUICKSTART.md) for the full setup guide.
+
 ### 🌍 Market Support
 All features support **Retail, Commercial, and London Market** contexts.
 
@@ -199,11 +216,14 @@ docker-compose up -d
 - Temporal Server (port 7233) - Workflow engine
 - Temporal UI (port 8088) - Workflow monitoring
 - Zookeeper + Kafka (port 9092) - Message broker
+- **MinIO (ports 9000/9001)** - S3-compatible object storage
 - **Jaeger (port 16686)** - Distributed tracing backend
 - **Prometheus (port 9090)** - Metrics collection
 - **Grafana (port 3001)** - Observability dashboards
+- **Flink JobManager (port 8081)** - Stream processing cluster
+- **Flink TaskManager** - Stream processing workers (2 instances)
 - beema-kernel (port 8080) - Core API + Temporal worker
-- metadata-service (port 8081) - Schema registry
+- metadata-service (port 8082) - Schema registry
 - beema-message-processor - Flink streaming job
 - studio (port 3000) - Visual builder
 
@@ -212,6 +232,8 @@ docker-compose up -d
 - Beema Kernel API: http://localhost:8080/swagger-ui
 - Temporal UI: http://localhost:8088
 - Keycloak: http://localhost:8180
+- **MinIO Console**: http://localhost:9001 (admin/password123)
+- **Flink Web UI**: http://localhost:8081
 - **Grafana (Observability)**: http://localhost:3001 (admin/admin)
 - **Jaeger (Tracing)**: http://localhost:16686
 - **Prometheus (Metrics)**: http://localhost:9090
@@ -382,6 +404,19 @@ cd apps/new-service
 - [Docker Setup](DOCKER_SETUP.md) - Complete Docker guide
 - [Turborepo Migration](TURBOREPO_MIGRATION.md) - Monorepo architecture
 - **[Observability Guide](platform/observability/README.md)** - OpenTelemetry, Jaeger, Prometheus, Grafana
+
+### Analytics Layer
+- [Analytics Quick Start](docs/QUICKSTART.md) - 5-minute export pipeline setup
+- [Batch API Reference](docs/api/BATCH_API.md) - Export endpoint documentation
+- [Architecture Guide](docs/architecture/ANALYTICS_LAYER.md) - Data flow and design decisions
+- [Deployment Guide](docs/deployment/ANALYTICS_DEPLOYMENT.md) - Configuration and troubleshooting
+
+### Flink Speed Layer
+- Flink cluster with S3/MinIO integration for checkpoints and data lake writes
+- Start: `docker-compose up -d flink-jobmanager` (TaskManagers auto-scale)
+- Web UI: http://localhost:8081
+- Submit jobs: `/opt/flink/bin/flink run --jobmanager flink-jobmanager:8081 your-job.jar`
+- MinIO buckets: `beema-datalake` (output), `beema-checkpoints` (state)
 
 ### beema-kernel
 - [Temporal Workflow Guide](apps/beema-kernel/TEMPORAL_WORKFLOW_GUIDE.md) - Workflow system
@@ -587,6 +622,7 @@ ISC
 ✅ Flink stream processing
 ✅ Visual form builder (Studio)
 ✅ **Observability stack (OpenTelemetry, Jaeger, Prometheus, Grafana)**
+✅ **Analytics layer (Parquet export, cloud-agnostic blob storage, MinIO)**
 ✅ Docker Compose full stack
 
 ### In Development

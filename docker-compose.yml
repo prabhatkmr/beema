@@ -20,6 +20,27 @@ services:
     networks:
       - beema-network
 
+  # MinIO - S3-Compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: beema-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # MinIO Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - beema-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   # Keycloak for OAuth2/OIDC (using PostgreSQL)
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
@@ -242,6 +263,14 @@ services:
       INNGEST_SIGNING_KEY: test-signing-key
       INNGEST_BASE_URL: http://inngest:8288
 
+      # MinIO / S3 storage configuration
+      STORAGE_TYPE: s3
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: beema-exports
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password123
+
       # OpenTelemetry configuration
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
       OTEL_SERVICE_NAME: beema-kernel
@@ -360,6 +389,13 @@ services:
         --config retention.ms=-1 \
         --config cleanup.policy=compact
 
+      # Create beema.events.policy_change topic (policy event stream for datalake)
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic beema.events.policy_change \
+        --partitions 6 \
+        --replication-factor 1 \
+        --config retention.ms=2592000000
+
       echo 'Topics created successfully'
       "
     networks:
@@ -436,14 +472,28 @@ services:
         taskmanager.numberOfTaskSlots: 4
         parallelism.default: 2
         state.backend: rocksdb
-        state.checkpoints.dir: file:///tmp/flink-checkpoints
-        state.savepoints.dir: file:///tmp/flink-savepoints
+        state.checkpoints.dir: s3://beema-checkpoints/checkpoints
+        state.savepoints.dir: s3://beema-checkpoints/savepoints
         execution.checkpointing.interval: 60000
         execution.checkpointing.mode: EXACTLY_ONCE
-    command: jobmanager
+        s3.endpoint: http://minio:9000
+        s3.path.style.access: true
+        s3.access-key: admin
+        s3.secret-key: password123
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password123
+    command: >
+      bash -c "
+        mkdir -p /opt/flink/plugins/s3-fs-hadoop &&
+        cp /opt/flink/opt/flink-s3-fs-hadoop-*.jar /opt/flink/plugins/s3-fs-hadoop/ &&
+        /docker-entrypoint.sh jobmanager
+      "
     volumes:
       - flink_checkpoints:/tmp/flink-checkpoints
       - flink_savepoints:/tmp/flink-savepoints
+    depends_on:
+      minio:
+        condition: service_healthy
     networks:
       - beema-network
     healthcheck:
@@ -468,7 +518,18 @@ services:
         taskmanager.memory.process.size: 2048m
         taskmanager.memory.managed.fraction: 0.4
         parallelism.default: 2
-    command: taskmanager
+        s3.endpoint: http://minio:9000
+        s3.path.style.access: true
+        s3.access-key: admin
+        s3.secret-key: password123
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password123
+    command: >
+      bash -c "
+        mkdir -p /opt/flink/plugins/s3-fs-hadoop &&
+        cp /opt/flink/opt/flink-s3-fs-hadoop-*.jar /opt/flink/plugins/s3-fs-hadoop/ &&
+        /docker-entrypoint.sh taskmanager
+      "
     networks:
       - beema-network
     volumes:
@@ -525,6 +586,51 @@ services:
         /opt/flink/usrlib/beema-message-processor.jar
       "
 
+  # Beema Streaming (Flink Job: Kafka -> Parquet -> MinIO Datalake)
+  beema-streaming:
+    build:
+      context: ./apps/beema-streaming
+      dockerfile: Dockerfile
+    container_name: beema-streaming-job
+    environment:
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_GROUP_ID: beema-policy-streaming
+      KAFKA_SOURCE_TOPIC: beema.events.policy_change
+
+      # S3/MinIO configuration
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: admin
+      S3_SECRET_KEY: password123
+      S3_PATH_STYLE_ACCESS: "true"
+      S3_OUTPUT_PATH: s3a://beema-datalake/speed/policy/
+
+      # Flink configuration
+      FLINK_JOB_NAME: beema-policy-data-stream
+      FLINK_PARALLELISM: 2
+      FLINK_CHECKPOINT_INTERVAL: 300000
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
+      flink-jobmanager:
+        condition: service_healthy
+    networks:
+      - beema-network
+    command: >
+      sh -c "
+      echo 'Waiting for Flink JobManager to be ready...';
+      sleep 10;
+      echo 'Submitting Beema Streaming Flink job...';
+      /opt/flink/bin/flink run
+        --jobmanager flink-jobmanager:8081
+        --detached
+        /opt/flink/usrlib/beema-streaming.jar
+      "
+
   # Inngest Dev Server
   inngest:
     image: inngest/inngest:latest
@@ -575,6 +681,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  minio_data:
     driver: local
   temporal_data:
     driver: local

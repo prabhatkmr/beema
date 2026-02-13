@@ -45,5 +45,9 @@ yarn-error.log*
 lerna-debug.log*
 pnpm-debug.log*
 
+# Docker local data
+data/
+data/flink/
+
 # OS
 Thumbs.db

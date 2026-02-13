@@ -1,0 +1,10 @@
+{
+  "name": "beema-streaming",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "mvn clean package -DskipTests",
+    "test": "mvn test",
+    "clean": "mvn clean"
+  }
+}

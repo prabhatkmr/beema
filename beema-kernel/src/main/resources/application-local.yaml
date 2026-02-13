@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+beema:
+  storage:
+    type: s3
+    s3:
+      endpoint: http://localhost:9000
+      region: us-east-1
+      bucket: beema-exports
+      access-key: admin
+      secret-key: password123
+      path-style-access: true  # Required for MinIO

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Hadoop core-site.xml for S3A/MinIO access in Flink jobs.
+  These values are overridden by environment variables at runtime.
+-->
+<configuration>
+    <property>
+        <name>fs.s3a.endpoint</name>
+        <value>${env.S3_ENDPOINT}</value>
+        <description>MinIO/S3 endpoint URL</description>
+    </property>
+    <property>
+        <name>fs.s3a.access.key</name>
+        <value>${env.S3_ACCESS_KEY}</value>
+    </property>
+    <property>
+        <name>fs.s3a.secret.key</name>
+        <value>${env.S3_SECRET_KEY}</value>
+    </property>
+    <property>
+        <name>fs.s3a.path.style.access</name>
+        <value>true</value>
+        <description>Required for MinIO (path-style instead of virtual-hosted)</description>
+    </property>
+    <property>
+        <name>fs.s3a.impl</name>
+        <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+    </property>
+    <property>
+        <name>fs.s3a.connection.ssl.enabled</name>
+        <value>false</value>
+        <description>Disable SSL for local MinIO</description>
+    </property>
+</configuration>
