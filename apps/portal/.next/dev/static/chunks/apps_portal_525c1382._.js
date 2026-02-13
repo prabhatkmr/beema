@@ -13,7 +13,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ne
 const locales = [
     'en-GB',
     'en-US',
-    'es'
+    'es-ES'
 ];
 const __TURBOPACK__default__export__ = _c1 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$2d$intl$40$4$2e$8$2e$2_next$40$16$2e$1$2e$6_react$40$19$2e$2$2e$3_typescript$40$5$2e$9$2e$3$2f$node_modules$2f$next$2d$intl$2f$dist$2f$esm$2f$development$2f$server$2f$react$2d$client$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getRequestConfig"])(_c = async ({ requestLocale })=>{
     // requestLocale is the locale from the request (URL, cookie, header, etc.)
@@ -33,13 +33,13 @@ const __TURBOPACK__default__export__ = _c1 = (0, __TURBOPACK__imported__module__
                 id: ()=>"[project]/apps/portal/locales/en-US.json (json, async loader)",
                 module: ()=>__turbopack_context__.A("[project]/apps/portal/locales/en-US.json (json, async loader)")
             },
-            "./locales/es.json": {
-                id: ()=>"[project]/apps/portal/locales/es.json (json, async loader)",
-                module: ()=>__turbopack_context__.A("[project]/apps/portal/locales/es.json (json, async loader)")
+            "./locales/es-ES.json": {
+                id: ()=>"[project]/apps/portal/locales/es-ES.json (json, async loader)",
+                module: ()=>__turbopack_context__.A("[project]/apps/portal/locales/es-ES.json (json, async loader)")
             }
         }).import(`./locales/${locale}.json`)).default,
         // Configure locale-specific formatting
-        timeZone: locale === 'en-US' ? 'America/New_York' : 'Europe/London',
+        timeZone: locale === 'en-US' ? 'America/New_York' : locale === 'es-ES' ? 'Europe/Madrid' : 'Europe/London',
         now: new Date()
     };
 });
@@ -210,6 +210,20 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+const localeInfo = {
+    'en-GB': {
+        flag: '🇬🇧',
+        name: 'English (UK)'
+    },
+    'en-US': {
+        flag: '🇺🇸',
+        name: 'English (US)'
+    },
+    'es-ES': {
+        flag: '🇪🇸',
+        name: 'Español (España)'
+    }
+};
 function LanguageSwitcher() {
     _s();
     const locale = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$use$2d$intl$40$4$2e$8$2e$2_react$40$19$2e$2$2e$3$2f$node_modules$2f$use$2d$intl$2f$dist$2f$esm$2f$development$2f$react$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocale"])();
@@ -217,23 +231,13 @@ function LanguageSwitcher() {
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     const t = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$2d$intl$40$4$2e$8$2e$2_next$40$16$2e$1$2e$6_react$40$19$2e$2$2e$3_typescript$40$5$2e$9$2e$3$2f$node_modules$2f$next$2d$intl$2f$dist$2f$esm$2f$development$2f$react$2d$client$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTranslations"])('common');
     const switchLocale = (newLocale)=>{
-        const localeNames = {
-            'en-GB': 'English (UK)',
-            'en-US': 'English (US)',
-            'es': 'Español'
-        };
         // Replace the current locale in the pathname with the new one
         const segments = pathname.split('/');
         segments[1] = newLocale;
         const newPathname = segments.join('/');
         // Announce locale change to screen readers
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$apps$2f$portal$2f$lib$2f$accessibility$2d$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["announceToScreenReader"])(`Language changed to ${localeNames[newLocale]}`, 'polite');
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$apps$2f$portal$2f$lib$2f$accessibility$2d$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["announceToScreenReader"])(`Language changed to ${localeInfo[newLocale].name}`, 'polite');
         router.push(newPathname);
-    };
-    const localeNames = {
-        'en-GB': 'English (UK)',
-        'en-US': 'English (US)',
-        'es': 'Español'
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
         className: "flex items-center gap-2",
@@ -243,31 +247,38 @@ function LanguageSwitcher() {
                 children: "Select language"
             }, void 0, false, {
                 fileName: "[project]/apps/portal/components/LanguageSwitcher.tsx",
-                lineNumber: 40,
+                lineNumber: 39,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                 value: locale,
                 onChange: (e)=>switchLocale(e.target.value),
-                className: "px-3 py-1 text-sm border rounded-md bg-background focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow",
+                className: "px-3 py-1.5 text-sm border rounded-md bg-background focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow",
                 "aria-label": "Language selector",
+                style: {
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                },
                 children: __TURBOPACK__imported__module__$5b$project$5d2f$apps$2f$portal$2f$i18n$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["locales"].map((loc)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$1$2e$6_$40$babel$2b$core$40$7$2e$29$2e$0_$40$opentelemetry$2b$api$40$1$2e$9$2e$0_react$2d$dom$40$19$2e$2$2e$3_react$40$19$2e$2$2e$3$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                         value: loc,
-                        children: localeNames[loc]
-                    }, loc, false, {
+                        children: [
+                            localeInfo[loc].flag,
+                            " ",
+                            localeInfo[loc].name
+                        ]
+                    }, loc, true, {
                         fileName: "[project]/apps/portal/components/LanguageSwitcher.tsx",
                         lineNumber: 48,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/apps/portal/components/LanguageSwitcher.tsx",
-                lineNumber: 41,
+                lineNumber: 40,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/apps/portal/components/LanguageSwitcher.tsx",
-        lineNumber: 39,
+        lineNumber: 38,
         columnNumber: 5
     }, this);
 }

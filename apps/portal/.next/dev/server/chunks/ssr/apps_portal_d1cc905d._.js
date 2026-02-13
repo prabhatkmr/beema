@@ -173,7 +173,7 @@ const localeConfig = {
         },
         timeZone: 'America/New_York'
     },
-    'es': {
+    'es-ES': {
         currency: 'EUR',
         currencyDisplay: 'symbol',
         dateFormat: {

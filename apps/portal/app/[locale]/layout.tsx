@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '../../i18n';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
-import "../globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Beema Portal",
@@ -38,25 +34,21 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body className={inter.className}>
-        <NextIntlClientProvider messages={messages}>
-          <a href="#main-content" className="skip-link">
-            Skip to main content
-          </a>
-          <nav className="border-b bg-background" role="navigation" aria-label="Main navigation">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between py-4">
-                <h1 className="text-xl font-bold text-primary">Beema Portal</h1>
-                <LanguageSwitcher />
-              </div>
-            </div>
-          </nav>
-          <main id="main-content" className="container mx-auto px-4 py-6" role="main">
-            {children}
-          </main>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages}>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <nav className="border-b bg-background" role="navigation" aria-label="Main navigation">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
+            <h1 className="text-xl font-bold text-primary">Beema Portal</h1>
+            <LanguageSwitcher />
+          </div>
+        </div>
+      </nav>
+      <main id="main-content" className="container mx-auto px-4 py-6" role="main">
+        {children}
+      </main>
+    </NextIntlClientProvider>
   );
 }

@@ -6,25 +6,25 @@ This directory contains utilities for locale-aware formatting of currency, dates
 
 ### Currency Formatting
 Automatically formats currency based on the user's locale:
-- **en-GB**: £15,000.00 (GBP)
-- **en-US**: $15,000.00 (USD)
-- **es**: 15.000,00 € (EUR)
+- **en-GB** 🇬🇧: £15,000.00 (GBP)
+- **en-US** 🇺🇸: $15,000.00 (USD)
+- **es-ES** 🇪🇸: 15.000,00 € (EUR)
 
 ### Number Formatting
 Uses locale-specific decimal separators and grouping:
-- **en-GB**: 1,234,567.89
-- **es**: 1.234.567,89
+- **en-GB** 🇬🇧: 1,234,567.89
+- **es-ES** 🇪🇸: 1.234.567,89
 
 ### Date Formatting
 Shows dates in locale-appropriate formats:
-- **en-GB**: 13 Feb 2026
-- **en-US**: Feb 13, 2026
-- **es**: 13 feb 2026
+- **en-GB** 🇬🇧: 13 Feb 2026
+- **en-US** 🇺🇸: Feb 13, 2026
+- **es-ES** 🇪🇸: 13 feb 2026
 
 ### Percentage Formatting
 Formats percentages with locale-specific decimal separators:
-- **en-GB**: 15.37%
-- **es**: 15,37 %
+- **en-GB** 🇬🇧: 15.37%
+- **es-ES** 🇪🇸: 15,37 %
 
 ## Usage
 
@@ -97,12 +97,12 @@ To add support for a new locale:
 
 1. Add the locale to `i18n.ts`:
    ```typescript
-   export const locales = ['en-GB', 'en-US', 'es', 'fr'] as const;
+   export const locales = ['en-GB', 'en-US', 'es-ES', 'fr-FR'] as const;
    ```
 
 2. Add configuration in `locale-config.ts`:
    ```typescript
-   'fr': {
+   'fr-FR': {
      currency: 'EUR',
      currencyDisplay: 'symbol',
      dateFormat: { day: '2-digit', month: 'short', year: 'numeric' },
@@ -110,7 +110,12 @@ To add support for a new locale:
    }
    ```
 
-3. Create translation file at `locales/fr.json`
+3. Add locale info with flag in `LanguageSwitcher.tsx`:
+   ```typescript
+   'fr-FR': { flag: '🇫🇷', name: 'Français (France)' }
+   ```
+
+4. Create translation file at `locales/fr-FR.json`
 
 ## API Reference
 
