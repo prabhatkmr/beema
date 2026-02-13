@@ -1,4 +1,5 @@
 {
   "/[locale]/portal/dashboard/page": "app/[locale]/portal/dashboard/page.js",
+  "/[locale]/portal/policy/page": "app/[locale]/portal/policy/page.js",
   "/_not-found/page": "app/_not-found/page.js"
 }
