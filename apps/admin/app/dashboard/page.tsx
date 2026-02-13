@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, Globe, Database, Activity, Plus, ArrowRight } from 'lucide-react';
+import { Users, Globe, Database, Activity, Plus, ArrowRight, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { StatCard } from '@/components/StatCard';
+import { InfrastructureCard } from '@/components/InfrastructureCard';
+import { useInfrastructureStatus } from '@/hooks/useInfrastructureStatus';
 import type { DashboardStats } from '@/types/admin';
 import * as api from '@/lib/api';
 
@@ -12,6 +14,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: infraStatus, loading: infraLoading, refetch: refetchInfra } = useInfrastructureStatus();
 
   useEffect(() => {
     async function fetchStats() {
@@ -115,31 +118,50 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Infrastructure Links */}
+      {/* Infrastructure Services */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Infrastructure</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { name: 'Grafana', url: 'http://localhost:3002', desc: 'Dashboards' },
-            { name: 'Jaeger', url: 'http://localhost:16686', desc: 'Tracing' },
-            { name: 'Temporal', url: 'http://localhost:8088', desc: 'Workflows' },
-            { name: 'Prometheus', url: 'http://localhost:9090', desc: 'Metrics' },
-            { name: 'Swagger', url: 'http://localhost:8080/swagger-ui.html', desc: 'Kernel API' },
-            { name: 'Keycloak', url: 'http://localhost:8180', desc: 'Auth' },
-            { name: 'MinIO', url: 'http://localhost:9001', desc: 'Storage' },
-            { name: 'Flink', url: 'http://localhost:8081', desc: 'Streaming' },
-          ].map((svc) => (
-            <a
-              key={svc.name}
-              href={svc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 border border-gray-200 rounded-lg hover:border-blue-400 hover:shadow-sm transition-all text-center"
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Infrastructure</h3>
+          <div className="flex items-center space-x-2">
+            {infraStatus?.timestamp && (
+              <p className="text-xs text-gray-400">
+                Updated {new Date(infraStatus.timestamp).toLocaleTimeString()}
+              </p>
+            )}
+            <button
+              onClick={refetchInfra}
+              className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              title="Refresh"
             >
-              <p className="text-sm font-medium text-gray-900">{svc.name}</p>
-              <p className="text-xs text-gray-500">{svc.desc}</p>
-            </a>
-          ))}
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {infraStatus?.services ? (
+            infraStatus.services.map((svc) => (
+              <InfrastructureCard
+                key={svc.name}
+                name={svc.name}
+                description={svc.description}
+                url={svc.url}
+                status={svc.status}
+                summary={svc.summary}
+                loading={infraLoading && !infraStatus}
+              />
+            ))
+          ) : (
+            Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="p-3 border border-gray-200 rounded-lg animate-pulse">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-4 bg-gray-200 rounded w-16" />
+                  <div className="h-2.5 w-2.5 bg-gray-200 rounded-full" />
+                </div>
+                <div className="h-3 bg-gray-100 rounded w-20 mb-1" />
+                <div className="h-3 bg-gray-100 rounded w-14" />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
