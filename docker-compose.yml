@@ -41,6 +41,26 @@ services:
       timeout: 20s
       retries: 3
 
+  # MinIO Init - Create required buckets on startup
+  minio-init:
+    image: minio/mc:latest
+    container_name: beema-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - beema-network
+    entrypoint: >
+      sh -c "
+      mc alias set local http://minio:9000 admin password123 &&
+      mc mb local/beema-exports --ignore-existing &&
+      mc mb local/beema-documents --ignore-existing &&
+      mc mb local/beema-attachments --ignore-existing &&
+      mc mb local/beema-datalake --ignore-existing &&
+      mc mb local/beema-checkpoints --ignore-existing &&
+      echo 'MinIO buckets initialized successfully'
+      "
+
   # Keycloak for OAuth2/OIDC (using PostgreSQL)
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
@@ -457,7 +477,7 @@ services:
 
   # Flink JobManager (Master)
   flink-jobmanager:
-    image: flink:1.18.1
+    image: flink:1.18.1-java17
     container_name: beema-flink-jobmanager
     ports:
       - "8081:8081"  # Flink Web UI Dashboard
@@ -505,7 +525,7 @@ services:
 
   # Flink TaskManager (Worker)
   flink-taskmanager:
-    image: flink:1.18.1
+    image: flink:1.18.1-java17
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -580,10 +600,7 @@ services:
       echo 'Waiting for Flink JobManager to be ready...';
       sleep 10;
       echo 'Submitting Flink job to JobManager...';
-      /opt/flink/bin/flink run
-        --jobmanager flink-jobmanager:8081
-        --detached
-        /opt/flink/usrlib/beema-message-processor.jar
+      /opt/flink/bin/flink run --jobmanager flink-jobmanager:8081 --detached /opt/flink/usrlib/beema-message-processor.jar
       "
 
   # Beema Streaming (Flink Job: Kafka -> Parquet -> MinIO Datalake)
@@ -614,8 +631,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
-      minio:
-        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
       flink-jobmanager:
         condition: service_healthy
     networks:
@@ -625,10 +642,7 @@ services:
       echo 'Waiting for Flink JobManager to be ready...';
       sleep 10;
       echo 'Submitting Beema Streaming Flink job...';
-      /opt/flink/bin/flink run
-        --jobmanager flink-jobmanager:8081
-        --detached
-        /opt/flink/usrlib/beema-streaming.jar
+      /opt/flink/bin/flink run --jobmanager flink-jobmanager:8081 --detached /opt/flink/usrlib/beema-streaming.jar
       "
 
   # Inngest Dev Server

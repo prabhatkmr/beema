@@ -40,7 +40,7 @@ CREATE POLICY tenant_isolation_agreements ON agreements
 
 -- Superuser bypass policy (for admin operations)
 CREATE POLICY admin_all_agreements ON agreements
-    TO postgres  -- Adjust role name as needed
+    TO beema
     USING (true)
     WITH CHECK (true);
 
@@ -53,7 +53,7 @@ CREATE POLICY tenant_isolation_agreement_parties ON agreement_parties
     WITH CHECK (tenant_id = get_current_tenant());
 
 CREATE POLICY admin_all_agreement_parties ON agreement_parties
-    TO postgres
+    TO beema
     USING (true)
     WITH CHECK (true);
 
@@ -66,7 +66,7 @@ CREATE POLICY tenant_isolation_agreement_coverages ON agreement_coverages
     WITH CHECK (tenant_id = get_current_tenant());
 
 CREATE POLICY admin_all_agreement_coverages ON agreement_coverages
-    TO postgres
+    TO beema
     USING (true)
     WITH CHECK (true);
 

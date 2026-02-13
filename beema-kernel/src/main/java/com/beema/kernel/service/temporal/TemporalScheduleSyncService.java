@@ -4,7 +4,7 @@ import com.beema.kernel.domain.schedule.TenantSchedule;
 import com.beema.kernel.repository.schedule.TenantScheduleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.List;
  * as the source of truth.
  */
 @Service
-@ConditionalOnBean(TemporalScheduleServiceImpl.class)
+@ConditionalOnProperty(name = "temporal.enabled", havingValue = "true")
 public class TemporalScheduleSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(TemporalScheduleSyncService.class);

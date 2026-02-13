@@ -16,7 +16,7 @@ import io.temporal.client.schedules.ScheduleState;
 import io.temporal.client.schedules.ScheduleUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -29,11 +29,11 @@ import java.util.Map;
  * Manages Temporal schedules that trigger UniversalBatchWorkflow
  * on configured cron expressions per tenant.
  *
- * Active only when ScheduleClient bean is available (i.e., temporal.enabled=true).
+ * Active only when temporal.enabled=true.
  * When inactive, the NoOpTemporalScheduleService provides the fallback.
  */
 @Service("temporalScheduleServiceImpl")
-@ConditionalOnBean(ScheduleClient.class)
+@ConditionalOnProperty(name = "temporal.enabled", havingValue = "true")
 public class TemporalScheduleServiceImpl implements TemporalScheduleService {
 
     private static final Logger log = LoggerFactory.getLogger(TemporalScheduleServiceImpl.class);

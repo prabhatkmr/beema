@@ -53,12 +53,7 @@ CREATE TABLE agreements (
         CHECK (market_context IN ('RETAIL', 'COMMERCIAL', 'LONDON_MARKET')),
 
     CONSTRAINT chk_agreement_status
-        CHECK (status IN ('DRAFT', 'QUOTED', 'BOUND', 'ACTIVE', 'CANCELLED', 'EXPIRED', 'RENEWED')),
-
-    -- Foreign key to metadata (soft reference, not enforced for flexibility)
-    -- CONSTRAINT fk_agreement_type
-    --     FOREIGN KEY (agreement_type_code, market_context)
-    --     REFERENCES metadata_agreement_types(type_code, market_context)
+        CHECK (status IN ('DRAFT', 'QUOTED', 'BOUND', 'ACTIVE', 'CANCELLED', 'EXPIRED', 'RENEWED'))
 );
 
 -- Triggers

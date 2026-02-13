@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for Beema Streaming (Flink Policy Data Stream Job)
 
 # Stage 1: Build with Maven
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy pom.xml and download dependencies (cache layer)
@@ -19,7 +19,7 @@ RUN mkdir -p /app/flink-libs && \
     true
 
 # Stage 2: Runtime with Flink
-FROM flink:1.18.1
+FROM flink:1.18.1-java17
 WORKDIR /opt/flink
 
 # Copy the fat JAR from build stage
@@ -27,6 +27,10 @@ COPY --from=build /app/target/beema-streaming-*.jar /opt/flink/usrlib/beema-stre
 
 # Copy Hadoop/S3 libs if available
 COPY --from=build /app/flink-libs/ /opt/flink/lib/
+
+# Install S3 filesystem plugin (needed for job graph construction during flink run)
+RUN mkdir -p /opt/flink/plugins/s3-fs-hadoop && \
+    cp /opt/flink/opt/flink-s3-fs-hadoop-*.jar /opt/flink/plugins/s3-fs-hadoop/
 
 # Set environment defaults
 ENV FLINK_JOB_NAME=beema-policy-data-stream
