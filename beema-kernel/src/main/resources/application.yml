@@ -129,6 +129,28 @@ beema:
       - COMMERCIAL
       - LONDON_MARKET
 
+  # Multi-Datasource Routing (cell-based architecture)
+  # When enabled, overrides spring.datasource with per-tenant routing
+  multi-datasource:
+    enabled: ${MULTI_DS_ENABLED:false}
+    default-datasource: master
+    datasources:
+      master:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:beema_dev}
+        username: ${DB_USERNAME:beema_admin}
+        password: ${DB_PASSWORD:changeme}
+        pool-size: ${DB_POOL_SIZE:20}
+      # Example: dedicated database for high-value tenants
+      # tenant-vip-1:
+      #   url: jdbc:postgresql://vip-db-1:5432/beema_vip1
+      #   username: beema_vip
+      #   password: secret123
+      #   pool-size: 10
+    tenant-mappings: {}
+      # Example: map tenant IDs to datasource keys
+      # vip-tenant-001: tenant-vip-1
+      # vip-tenant-002: tenant-vip-1
+
   # Blob Storage Configuration (prefix: beema.storage)
   storage:
     type: ${STORAGE_TYPE:filesystem}
