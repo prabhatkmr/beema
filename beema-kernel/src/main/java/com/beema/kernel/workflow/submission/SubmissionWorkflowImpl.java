@@ -79,9 +79,14 @@ public class SubmissionWorkflowImpl implements SubmissionWorkflow {
 
         // Step 5: Bind the submission and persist
         status = "BOUND";
-        log.info("Submission {} bound, persisting final state", submissionId);
+        log.info("Submission {} bound, persisting state", submissionId);
         persistenceActivities.saveBound(submissionId);
-        log.info("Submission {} bound successfully, status={}", submissionId, status);
+
+        // Step 6: Issue the policy
+        status = "ISSUED";
+        log.info("Submission {} issuing policy", submissionId);
+        persistenceActivities.saveIssued(submissionId);
+        log.info("Submission {} issued successfully, status={}", submissionId, status);
 
         return submissionId;
     }

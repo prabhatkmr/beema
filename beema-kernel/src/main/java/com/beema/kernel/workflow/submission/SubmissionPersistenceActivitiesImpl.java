@@ -41,4 +41,10 @@ public class SubmissionPersistenceActivitiesImpl implements SubmissionPersistenc
         log.info("Persisting BOUND submission: {}", submissionId);
         submissionService.updateStatus(UUID.fromString(submissionId), SubmissionStatus.BOUND, null);
     }
+
+    @Override
+    public void saveIssued(String submissionId) {
+        log.info("Persisting ISSUED submission: {}", submissionId);
+        submissionService.updateStatus(UUID.fromString(submissionId), SubmissionStatus.ISSUED, null);
+    }
 }

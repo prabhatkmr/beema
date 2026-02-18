@@ -31,4 +31,10 @@ public interface SubmissionPersistenceActivities {
      */
     @ActivityMethod
     void saveBound(String submissionId);
+
+    /**
+     * Update submission status to ISSUED (policy formally issued).
+     */
+    @ActivityMethod
+    void saveIssued(String submissionId);
 }

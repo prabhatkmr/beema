@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -9,6 +9,15 @@ import {
   Copy,
   Check,
   ClipboardList,
+  ChevronRight,
+  X,
+  Activity,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Signal,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
@@ -22,7 +31,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Submission, SubmissionStatus } from "@/types/submission";
+import type {
+  Submission,
+  SubmissionStatus,
+  WorkflowStatus,
+  WorkflowEvent,
+} from "@/types/submission";
 
 const STATUS_BADGE: Record<
   SubmissionStatus,
@@ -37,14 +51,40 @@ const STATUS_BADGE: Record<
     className: "bg-blue-100 text-blue-700 border-blue-200",
   },
   BOUND: {
-    label: "Accepted",
+    label: "Bound",
     className: "bg-green-100 text-green-700 border-green-200",
+  },
+  ISSUED: {
+    label: "Issued",
+    className: "bg-emerald-100 text-emerald-700 border-emerald-200",
   },
   DECLINED: {
     label: "Declined",
     className: "bg-red-100 text-red-700 border-red-200",
   },
 };
+
+const WORKFLOW_STATUS_BADGE: Record<string, { label: string; className: string }> = {
+  RUNNING: { label: "Running", className: "bg-blue-100 text-blue-700 border-blue-200" },
+  COMPLETED: { label: "Completed", className: "bg-green-100 text-green-700 border-green-200" },
+  FAILED: { label: "Failed", className: "bg-red-100 text-red-700 border-red-200" },
+  TIMED_OUT: { label: "Timed Out", className: "bg-orange-100 text-orange-700 border-orange-200" },
+  CANCELED: { label: "Canceled", className: "bg-gray-100 text-gray-700 border-gray-200" },
+};
+
+function getEventIcon(eventType: string) {
+  if (eventType.includes("STARTED") || eventType.includes("SCHEDULED"))
+    return <Play className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />;
+  if (eventType.includes("COMPLETED"))
+    return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" aria-hidden="true" />;
+  if (eventType.includes("FAILED"))
+    return <XCircle className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />;
+  if (eventType.includes("SIGNALED"))
+    return <Signal className="h-3.5 w-3.5 text-purple-500" aria-hidden="true" />;
+  if (eventType.includes("TIMED_OUT"))
+    return <AlertCircle className="h-3.5 w-3.5 text-orange-500" aria-hidden="true" />;
+  return <Activity className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />;
+}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -57,7 +97,10 @@ function CopyButton({ text }: { text: string }) {
 
   return (
     <button
-      onClick={handleCopy}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleCopy();
+      }}
       className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
       aria-label={`Copy ${text}`}
     >
@@ -90,6 +133,159 @@ function LoadingSkeleton() {
   );
 }
 
+function WorkflowDetailPanel({
+  submissionId,
+  onClose,
+}: {
+  submissionId: string;
+  onClose: () => void;
+}) {
+  const [workflow, setWorkflow] = useState<WorkflowStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchWorkflow() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `/api/kernel/submissions/${submissionId}/workflow`,
+          { headers: { "X-Tenant-ID": "default-tenant" } }
+        );
+        if (response.status === 404) {
+          setError("No workflow found for this submission");
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(`Failed to fetch workflow (${response.status})`);
+        }
+        const data = await response.json();
+        setWorkflow(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load workflow"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWorkflow();
+  }, [submissionId]);
+
+  const formatTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    } catch {
+      return iso;
+    }
+  };
+
+  return (
+    <div className="border-t bg-muted/20">
+      <div className="px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <h3 className="text-sm font-semibold">Workflow Timeline</h3>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onClose}
+            aria-label="Close workflow details"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-4">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Loading workflow...
+            </span>
+          </div>
+        ) : error ? (
+          <p className="text-sm text-muted-foreground py-2">{error}</p>
+        ) : workflow ? (
+          <div className="space-y-4">
+            {/* Workflow Summary */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <Badge
+                className={
+                  (WORKFLOW_STATUS_BADGE[workflow.status] ?? WORKFLOW_STATUS_BADGE.RUNNING)
+                    .className
+                }
+                variant="outline"
+              >
+                {(WORKFLOW_STATUS_BADGE[workflow.status] ?? { label: workflow.status }).label}
+              </Badge>
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                Started: {formatTime(workflow.startTime)}
+              </span>
+              {workflow.closeTime && (
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                  Ended: {formatTime(workflow.closeTime)}
+                </span>
+              )}
+              <span className="text-muted-foreground text-xs">
+                Queue: {workflow.taskQueue}
+              </span>
+            </div>
+
+            {/* Event Timeline */}
+            {workflow.events.length > 0 && (
+              <div className="relative ml-2">
+                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
+                <div className="space-y-3">
+                  {workflow.events.map((event) => (
+                    <div
+                      key={event.eventId}
+                      className="flex items-start gap-3 relative"
+                    >
+                      <div className="relative z-10 mt-0.5 rounded-full bg-background p-0.5">
+                        {getEventIcon(event.eventType)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">
+                            {event.detail}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(event.timestamp)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground/70">
+                          {event.eventType.replace(/_/g, " ").toLowerCase()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Run ID */}
+            <div className="text-xs text-muted-foreground pt-1 border-t">
+              Run ID: <code className="font-mono">{workflow.runId}</code>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function SubmissionsPage() {
   const router = useRouter();
   const tc = useTranslations("common");
@@ -99,6 +295,7 @@ export default function SubmissionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bindingId, setBindingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
@@ -201,6 +398,10 @@ export default function SubmissionsPage() {
     );
   });
 
+  const toggleExpand = (submissionId: string) => {
+    setExpandedId((prev) => (prev === submissionId ? null : submissionId));
+  };
+
   return (
     <AppShell
       title={tc("backToDashboard")}
@@ -244,6 +445,12 @@ export default function SubmissionsPage() {
                     {submissions.filter((s) => s.status === "BOUND").length}
                   </span>
                 </span>
+                <span className="text-muted-foreground">
+                  Issued:{" "}
+                  <span className="font-medium text-emerald-700">
+                    {submissions.filter((s) => s.status === "ISSUED").length}
+                  </span>
+                </span>
               </>
             )}
           </div>
@@ -278,7 +485,8 @@ export default function SubmissionsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-6">Submission ID</TableHead>
+                  <TableHead className="w-8 pl-4" />
+                  <TableHead>Submission ID</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Premium</TableHead>
@@ -290,56 +498,94 @@ export default function SubmissionsPage() {
                 {filtered.map((submission) => {
                   const badge = STATUS_BADGE[submission.status];
                   const isBinding = bindingId === submission.submissionId;
+                  const isExpanded = expandedId === submission.submissionId;
 
                   return (
-                    <TableRow key={submission.submissionId}>
-                      <TableCell className="pl-6">
-                        <CopyButton text={submission.submissionId} />
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium capitalize">
-                          {submission.product}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={badge.className} variant="outline">
-                          {badge.label}
-                        </Badge>
-                        {submission.status === "QUOTED" &&
-                          submission.ratingResult && (
-                            <span className="ml-2 text-xs text-blue-600 font-medium">
-                              {formatCurrency(submission.ratingResult.total)}
-                            </span>
-                          )}
-                      </TableCell>
-                      <TableCell>
-                        {submission.ratingResult
-                          ? formatCurrency(submission.ratingResult.premium)
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {formatDate(submission.createdAt)}
-                      </TableCell>
-                      <TableCell className="pr-6 text-right">
-                        {submission.status === "QUOTED" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleBind(submission.submissionId)}
-                            disabled={isBinding}
-                          >
-                            {isBinding && (
-                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                            )}
-                            {isBinding ? "Accepting..." : "Accept Quote"}
-                          </Button>
-                        )}
-                        {submission.status === "BOUND" && (
-                          <Badge className="bg-green-100 text-green-700 border-green-200" variant="outline">
-                            Accepted
+                    <React.Fragment key={submission.submissionId}>
+                      <TableRow
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => toggleExpand(submission.submissionId)}
+                      >
+                        <TableCell className="pl-4 w-8">
+                          <ChevronRight
+                            className={`h-4 w-4 text-muted-foreground transition-transform ${
+                              isExpanded ? "rotate-90" : ""
+                            }`}
+                            aria-hidden="true"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <CopyButton text={submission.submissionId} />
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium capitalize">
+                            {submission.product}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={badge.className} variant="outline">
+                            {badge.label}
                           </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                          {submission.status === "QUOTED" &&
+                            submission.ratingResult && (
+                              <span className="ml-2 text-xs text-blue-600 font-medium">
+                                {formatCurrency(submission.ratingResult.total)}
+                              </span>
+                            )}
+                        </TableCell>
+                        <TableCell>
+                          {submission.ratingResult
+                            ? formatCurrency(submission.ratingResult.premium)
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {formatDate(submission.createdAt)}
+                        </TableCell>
+                        <TableCell className="pr-6 text-right">
+                          {submission.status === "QUOTED" && (
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBind(submission.submissionId);
+                              }}
+                              disabled={isBinding}
+                            >
+                              {isBinding && (
+                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                              )}
+                              {isBinding ? "Accepting..." : "Accept Quote"}
+                            </Button>
+                          )}
+                          {submission.status === "BOUND" && (
+                            <Badge
+                              className="bg-green-100 text-green-700 border-green-200"
+                              variant="outline"
+                            >
+                              Bound
+                            </Badge>
+                          )}
+                          {submission.status === "ISSUED" && (
+                            <Badge
+                              className="bg-emerald-100 text-emerald-700 border-emerald-200"
+                              variant="outline"
+                            >
+                              Issued
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="p-0">
+                            <WorkflowDetailPanel
+                              submissionId={submission.submissionId}
+                              onClose={() => setExpandedId(null)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
